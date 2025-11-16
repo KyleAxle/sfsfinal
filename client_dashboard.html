@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>My Appointments</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background: #e9effd;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2563eb;
+            font-size: 2.2rem;
+            margin-top: 24px;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+
+        .appointments-container {
+            background: #fff;
+            max-width: 1500px;
+            margin: 32px auto 0 auto;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.12);
+            padding: 32px 28px 24px 28px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #2563eb;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        tr:not(:last-child) td {
+            border-bottom: 1px solid #e3e8f0;
+        }
+
+        .badge-completed {
+            background: #2563eb;
+            color: #fff;
+            border-radius: 6px;
+            padding: 3px 12px;
+            font-size: 0.95em;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .badge-pending {
+            background: #facc15;
+            color: #212529;
+            border-radius: 6px;
+            padding: 3px 12px;
+            font-size: 0.95em;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+
+        .action-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+            margin-top: 18px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        @media (max-width: 900px) {
+            .appointments-container {
+                padding: 12px 2vw 18px 2vw;
+            }
+
+            th,
+            td {
+                font-size: 0.95rem;
+                padding: 7px 6px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .appointments-container {
+                padding: 4px 0 10px 0;
+            }
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            th {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+            }
+
+            tr {
+                margin-bottom: 18px;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                min-height: 32px;
+            }
+
+            td:before {
+                position: absolute;
+                left: 12px;
+                top: 10px;
+                width: 45%;
+                white-space: nowrap;
+                font-weight: 600;
+                color: #2563eb;
+            }
+
+            td:nth-child(1):before {
+                content: "Office";
+            }
+
+            td:nth-child(2):before {
+                content: "Name";
+            }
+
+            td:nth-child(3):before {
+                content: "User ID";
+            }
+
+            td:nth-child(4):before {
+                content: "Email";
+            }
+
+            td:nth-child(5):before {
+                content: "Concern";
+            }
+
+            td:nth-child(6):before {
+                content: "Date Requested";
+            }
+
+            td:nth-child(7):before {
+                content: "Time";
+            }
+
+            td:nth-child(8):before {
+                content: "Status";
+            }
+        }
+
+        /* Feedback Modal Styles */
+        #feedbackModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #feedbackModal .modal-content {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            width: 320px;
+            max-width: 90vw;
+            margin: auto;
+        }
+
+        #feedbackModal h3 {
+            margin-top: 0;
+        }
+
+        #feedbackModal #ratingRow {
+            font-size: 2em;
+            text-align: center;
+        }
+
+        #feedbackModal .rate {
+            cursor: pointer;
+            display: inline-block;
+            margin: 0 5px;
+        }
+
+        #feedbackModal textarea {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #feedbackModal button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>My Appointments</h1>
+    <div class="appointments-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Office</th>
+                    <th>Name</th>
+                    <th>User ID</th>
+                    <th>Email</th>
+                    <th>Concern</th>
+                    <th>Date Requested</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentsTable">
+                <tr>
+                    <td colspan="8" style="text-align:center;color:#888;">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+        <button class="btn-primary" onclick="bookAppointment()">Book New Appointment</button>
+    </div>
+
+    <!-- Feedback Popup -->
+    <div id="feedbackModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:9999; align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:24px; border-radius:8px; width:320px; max-width:90vw; margin:auto;">
+        <h3>Help us improve!</h3>
+        <p>How easy was it for you to complete your appointment?</p>
+        <div id="ratingRow" style="font-size:2em; text-align:center;">
+          <span class="rate" data-rate="1">&#128577;</span>
+          <span class="rate" data-rate="2">&#128542;</span>
+          <span class="rate" data-rate="3">&#128528;</span>
+          <span class="rate" data-rate="4">&#128522;</span>
+          <span class="rate" data-rate="5">&#128525;</span>
+        </div>
+        <textarea id="feedbackComment" placeholder="How can we improve?" style="width:100%;margin-top:10px;"></textarea>
+        <button id="submitFeedback" style="margin-top:10px;" class="btn btn-primary btn-block">Submit feedback</button>
+        <button id="closeFeedback" style="margin-top:10px;" class="btn btn-secondary btn-block">Cancel</button>
+      </div>
+    </div>
+
+    <script>
+        function fetchAppointments() {
+            let table = document.getElementById('appointmentsTable');
+            table.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#888;">Loading...</td></tr>`;
+
+            fetch('get_client_dashboard.php')
+                .then(res => res.json())
+                .then(data => {
+                    console.log(data); // Check browser console for output
+                    renderAppointments(data);
+                });
+        }
+
+        function renderAppointments(appointments) {
+            let table = document.getElementById('appointmentsTable');
+            if (!appointments.length) {
+                table.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#888;">No appointments found.</td></tr>`;
+                return;
+            }
+            let html = "";
+            appointments.sort((a, b) => {
+                // Sort by date then time
+                if (a.appointment_date === b.appointment_date) {
+                    return a.appointment_time.localeCompare(b.appointment_time);
+                }
+                return b.appointment_date.localeCompare(a.appointment_date);
+            });
+            appointments.forEach(app => {
+                html += `<tr>
+    <td>${app.office || '-'}</td>
+    <td>${(app.first_name || '') + ' ' + (app.last_name || '')}</td>
+    <td>${app.user_id || '-'}</td>
+    <td>${app.email || '-'}</td>
+    <td>${app.concern || '-'}</td>
+    <td>${app.appointment_date || '-'}</td>
+    <td>${app.appointment_time || '-'}</td>
+    <td>
+        ${app.status === "Completed"
+                    ? '<span class="badge-completed">Completed</span>'
+                    : `<span class="badge-pending">${app.status}</span>`
+                }
+        ${app.status === "Completed"
+                    ? `<span class="action-link" onclick="giveFeedback(${app.appointment_id})">Give Feedback</span>`
+                    : `<button class="btn btn-primary btn-sm complete-btn" data-appointment="${app.appointment_id}">Complete</button>`
+                }
+    </td>
+</tr>`;
+    });
+    table.innerHTML = html;
+}
+
+        function trackAppointment(id) {
+            alert("Tracking appointment ID: " + id);
+            // window.location.href = 'track_appointment.php?id=' + id;
+        }
+        function giveFeedback(id) {
+            // Open feedback modal
+            document.getElementById('feedbackModal').style.display = 'flex';
+        }
+        function bookAppointment() {
+            window.location.href = 'proto2.html';
+        }
+
+        // Feedback submission
+        document.getElementById('submitFeedback').addEventListener('click', function() {
+            let rating = document.querySelector('input[name="rating"]:checked');
+            let feedback = document.getElementById('feedbackComment').value;
+            if (!rating) {
+                alert("Please select a rating.");
+                return;
+            }
+            rating = rating.value;
+
+            // Submit feedback via AJAX or fetch
+            fetch('submit_feedback.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ rating, feedback })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    document.getElementById('feedbackModal').style.display = 'none';
+                })
+                .catch(err => console.error(err));
+        });
+
+        document.getElementById('closeFeedback').addEventListener('click', function() {
+            document.getElementById('feedbackModal').style.display = 'none';
+        });
+
+        // Initial load
+        fetchAppointments();
+
+        // Your script here
+        let selectedAppointmentId = null;
+        let selectedRating = 0;
+
+        // Show popup when Complete is clicked
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('complete-btn')) {
+                selectedAppointmentId = e.target.getAttribute('data-appointment');
+                document.getElementById('feedbackModal').style.display = 'flex';
+            }
+            if (e.target.id === 'closeFeedback') {
+                document.getElementById('feedbackModal').style.display = 'none';
+                selectedRating = 0;
+                document.querySelectorAll('.rate').forEach(r => r.style.opacity = 1);
+                document.getElementById('feedbackComment').value = '';
+            }
+        });
+
+        // Handle rating selection
+        document.querySelectorAll('.rate').forEach(function(el) {
+            el.addEventListener('click', function() {
+                selectedRating = this.getAttribute('data-rate');
+                document.querySelectorAll('.rate').forEach(r => r.style.opacity = 0.5);
+                this.style.opacity = 1; 
+            });
+        });
+
+        // Submit feedback
+        document.getElementById('submitFeedback').addEventListener('click', function() {
+            const comment = document.getElementById('feedbackComment').value;
+            if (!selectedRating) {
+                alert('Please select a rating.');
+                return;
+            }
+            fetch('submit_feedback.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `appointment_id=${encodeURIComponent(selectedAppointmentId)}&rating=${encodeURIComponent(selectedRating)}&comment=${encodeURIComponent(comment)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Thank you for your feedback!');
+                    document.getElementById('feedbackModal').style.display = 'none';
+                    selectedRating = 0;
+                    document.querySelectorAll('.rate').forEach(r => r.style.opacity = 1);
+                    document.getElementById('feedbackComment').value = '';
+                } else {
+                    alert('Failed to submit feedback.');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

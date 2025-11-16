@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>School Appointment System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+            margin-left: 260px !important;
+        }
+
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: #212529;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 1040;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+        }
+
+        @media (max-width: 700px) {
+            #sidebar {
+                width: 100vw;
+                height: auto;
+                position: static;
+            }
+
+            body {
+                margin-left: 0 !important;
+            }
+        }
+
+        .main-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #3b82f6;
+            text-shadow: 0 4px 24px rgba(59, 130, 246, 0.10);
+        }
+
+        .office-card {
+            cursor: pointer;
+            transition: box-shadow 0.2s, transform 0.2s;
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10);
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(4px);
+        }
+
+        .office-card:hover {
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.18);
+            transform: translateY(-4px) scale(1.03);
+            border-color: #6366f1;
+        }
+
+        .card-title {
+            color: #3b82f6;
+            font-weight: 700;
+        }
+
+        .modal-content {
+            border-radius: 1.2rem;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.18);
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-header {
+            background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+            color: #fff;
+            border-top-left-radius: 1.2rem;
+            border-top-right-radius: 1.2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+            border: none;
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        #registrarFields {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .main-title {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div>
+            <div style="padding: 2rem 1.5rem 1rem 1.5rem; border-bottom: 1px solid #343a40;">
+                <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">
+                    <!-- Greeting -->
+                    <span id="greeting" style="display:block; margin-bottom:0.5rem;">Hello, <span id="profileName">Loading...</span>!</span>
+                </div>
+                <div style="font-size: 0.97rem; color: #adb5bd;">
+                    <span id="profileEmail"></span>
+                </div>
+            </div>
+            <!-- Track Appointments Button -->
+            <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
+                <button id="trackAppointmentBtn" class="btn btn-outline-primary w-100 mb-3">
+                    <i class="bi bi-search"></i> Track My Appointments
+                </button>
+            </div>
+        </div>
+        <div style="padding: 1.5rem;">
+            <button onclick="signOut()" style="
+                width: 100%;
+                background: #dc3545;
+                color: #fff;
+                border: none;
+                border-radius: 6px;
+                padding: 12px 0;
+                font-size: 1.08rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s;
+            ">Sign Out</button>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <div class="main-title mb-2">Welcome to CJC - School Frontline Services</div>
+            <p class="text-secondary mb-0" style="font-size:1.1rem;opacity:0.85;">Book your appointment with any office
+                below</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <!-- Office Cards -->
+            <div class="col-md-4 col-sm-6">
+                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
+                    data-office="Registrar Office">
+                    <div class="card-body">
+                        <h5 class="card-title">Registrar Office</h5>
+                        <p class="card-text">Academic records, enrollment, and transcripts.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
+                    data-office="Cashier Office">
+                    <div class="card-body">
+                        <h5 class="card-title">Cashier Office</h5>
+                        <p class="card-text">Payments, receipts, and financial concerns.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
+                    data-office="CCIS Office">
+                    <div class="card-body">
+                        <h5 class="card-title">CCIS Office</h5>
+                        <p class="card-text">College of Computing and Information Sciences.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Dean (CCIS Office) Card -->
+            <div class="col-md-4 col-sm-6">
+                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
+                    data-office="Dean (CCIS Office)">
+                    <div class="card-body">
+                        <h5 class="card-title">Dean (CCIS Office)</h5>
+                        <p class="card-text">Book an appointment with the Dean of CCIS.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
+                    data-office="Guidance Office">
+                    <div class="card-body">
+                        <h5 class="card-title">Guidance Office</h5>
+                        <p class="card-text">Counseling and student support.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
+                    data-office="Assessment Office">
+                    <div class="card-body">
+                        <h5 class="card-title">Assessment Office</h5>
+                        <p class="card-text">Student assessment and evaluation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment Modal -->
+    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content" id="appointmentForm">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" id="appointmentModalLabel">Book Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    <div class="mb-3">
+                        <label class="form-label">Office</label>
+                        <input type="text" class="form-control" id="officeInput" readonly>
+                    </div>
+                    <!-- Registrar Office Extra Fields -->
+                    <div id="registrarFields" style="display:none;">
+                        <div class="mb-3">
+                            <label class="form-label">Paper Type</label>
+                            <select class="form-select" id="paperType">
+                                <option value="">Select paper</option>
+                                <option value="Transcript of Records">Transcript of Records</option>
+                                <option value="Diploma">Diploma</option>
+                                <option value="Certificate">Certificate</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Processing Days</label>
+                            <input type="text" class="form-control" id="processingDays" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Concern/Reason</label>
+                        <textarea class="form-control" id="concernText" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date of Request</label>
+                        <input type="date" class="form-control" id="appointmentDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Available Time to Collect</label>
+                        <select class="form-select" id="timeSelect" required>
+                            <option value="">Select a time</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="releaseDateField" style="display:none;">
+                        <label class="form-label">Expected Release Date</label>
+                        <input type="text" class="form-control" id="releaseDate" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="submit" class="btn btn-primary w-100">Book Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title w-100" id="successModalLabel">Reservation Completed!</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Your appointment has been successfully booked.</p>
+                    <div id="appointmentDetails" class="text-start mb-3"></div>
+                    <button type="button" class="btn btn-success w-100" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Office time slots
+        const defaultTimes = [
+            "09:00 AM - 09:30 AM",
+            "10:00 AM - 10:30 AM",
+            "11:00 AM - 11:30 AM",
+            "01:00 PM - 01:30 PM",
+            "02:00 PM - 02:30 PM",
+            "03:00 PM - 03:30 PM"
+        ];
+        const deanTimes = [
+            "10:00 AM - 11:00 AM",
+            "02:00 PM - 03:00 PM"
+        ];
+
+        // Registrar paper processing days
+        const paperProcessing = {
+            "Transcript of Records": 7,
+            "Diploma": 5,
+            "Certificate": 3,
+            "Others": 2
+        };
+
+        // Show/hide registrar fields and update time slots
+        document.querySelectorAll('.office-card').forEach(card => {
+            card.addEventListener('click', function () {
+                const office = this.getAttribute('data-office');
+                document.getElementById('officeInput').value = office;
+
+                // Registrar fields
+                const registrarFields = document.getElementById('registrarFields');
+                const releaseDateField = document.getElementById('releaseDateField');
+                const appointmentDate = document.getElementById('appointmentDate');
+                if (office === "Registrar Office") {
+                    registrarFields.style.display = "block";
+                    releaseDateField.style.display = "block";
+                    // Set Date of Request to today and disable editing
+                    const today = new Date().toISOString().split('T')[0];
+                    appointmentDate.value = today;
+                    appointmentDate.readOnly = true;
+                } else {
+                    registrarFields.style.display = "none";
+                    releaseDateField.style.display = "none";
+                    document.getElementById('paperType').value = "";
+                    document.getElementById('processingDays').value = "";
+                    document.getElementById('releaseDate').value = "";
+                    // Enable editing and clear date for other offices
+                    appointmentDate.readOnly = false;
+                    appointmentDate.value = "";
+                }
+
+                // Time slots
+                const timeSelect = document.getElementById('timeSelect');
+                timeSelect.innerHTML = '<option value="">Select a time</option>';
+                let times = defaultTimes;
+                if (office === "Dean (CCIS Office)") {
+                    times = deanTimes;
+                }
+                times.forEach(time => {
+                    const opt = document.createElement('option');
+                    opt.textContent = time;
+                    timeSelect.appendChild(opt);
+                });
+            });
+        });
+
+        // Update processing days and release date for registrar
+        document.getElementById('paperType').addEventListener('change', function () {
+            const paper = this.value;
+            const days = paperProcessing[paper] || "";
+            document.getElementById('processingDays').value = days || "";
+            updateReleaseDate();
+        });
+
+        document.getElementById('appointmentDate').addEventListener('change', updateReleaseDate);
+
+        function updateReleaseDate() {
+            const paper = document.getElementById('paperType').value;
+            const days = paperProcessing[paper];
+            const dateStr = document.getElementById('appointmentDate').value;
+            if (days && dateStr) {
+                const date = new Date(dateStr);
+                // Add working days (skip weekends)
+                let added = 0;
+                while (added < days) {
+                    date.setDate(date.getDate() + 1);
+                    if (date.getDay() !== 0 && date.getDay() !== 6) {
+                        added++;
+                    }
+                }
+                // Format as YYYY-MM-DD for database
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                document.getElementById('releaseDate').value = `${yyyy}-${mm}-${dd}`;
+            } else {
+                document.getElementById('releaseDate').value = "";
+            }
+        }
+
+        // Office name to office_id mapping (update these IDs to match your DB)
+        const officeIdMap = {
+            "Registrar Office": 1,
+            "Cashier Office": 2,
+            "CCIS Office": 3,
+            "Dean (CCIS Office)": 4,
+            "Guidance Office": 5,
+            "Assessment Office": 6
+        };
+
+        // Handle form submit and save to database
+        document.getElementById('appointmentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Gather details
+            const office = document.getElementById('officeInput').value;
+            const office_id = officeIdMap[office] || 1;
+            const paperType = document.getElementById('paperType').value;
+            const processingDays = document.getElementById('processingDays').value;
+            const releaseDate = document.getElementById('releaseDate').value;
+            const concern = document.getElementById('concernText').value;
+            const time = document.getElementById('timeSelect').value;
+            const date = document.getElementById('appointmentDate').value;
+
+            // Send data to PHP (include last_name, first_name, email)
+            fetch('save_appointment.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `office_id=${encodeURIComponent(office_id)}&paperType=${encodeURIComponent(paperType)}&processingDays=${encodeURIComponent(processingDays)}&releaseDate=${encodeURIComponent(releaseDate)}&concern=${encodeURIComponent(concern)}&appointment_date=${encodeURIComponent(date)}&appointment_time=${encodeURIComponent(time)}`
+            })
+                .then(response => response.text())
+                .then(result => {
+                    if (result.trim() === "success") {
+                        // Build details HTML
+                        let details = `<strong>Office:</strong> ${office}<br>`;
+                        if (office === "Registrar Office") {
+                            details += `<strong>Paper Type:</strong> ${paperType}<br>`;
+                            details += `<strong>Processing Days:</strong> ${processingDays ? processingDays + " working days" : ""}<br>`;
+                        }
+                        details += `<strong>Concern:</strong> ${concern}<br>`;
+                        details += `<strong>Date of Request:</strong> ${date}<br>`;
+                        details += `<strong>Time:</strong> ${time}<br>`;
+                        if (office === "Registrar Office") {
+                            details += `<strong>Expected Release Date:</strong> ${releaseDate}<br>`;
+                        }
+
+                        document.getElementById('appointmentDetails').innerHTML = details;
+
+                        // Hide appointment modal, reset form, show success modal
+                        var appointmentModal = bootstrap.Modal.getInstance(document.getElementById('appointmentModal'));
+                        appointmentModal.hide();
+                        this.reset();
+                        document.getElementById('registrarFields').style.display = "none";
+                        document.getElementById('releaseDateField').style.display = "none";
+                        var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                        successModal.show();
+
+                        // Show "Track Appointment" button
+                        document.getElementById('trackAppointmentBtn').style.display = "block";
+                    } else {
+                        alert("Failed to save appointment. Please try again.");
+                    }
+                });
+        });
+
+        // Fetch profile info dynamically from PHP
+        fetch('profile_info.php')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('profileName').textContent = data.first_name;
+                    document.getElementById('profileEmail').textContent = data.email;
+                    document.getElementById('greeting').innerHTML = `Hello, <span id="profileName">${data.first_name}</span>!`;
+                } else {
+                    document.getElementById('profileName').textContent = "Guest";
+                    document.getElementById('profileEmail').textContent = "";
+                    document.getElementById('greeting').textContent = "Hello, Guest!";
+                }
+            })
+            .catch(err => {
+                document.getElementById('profileName').textContent = "Guest";
+                document.getElementById('profileEmail').textContent = "";
+                document.getElementById('greeting').textContent = "Hello, Guest!";
+                console.error('Profile fetch error:', err);
+            });
+
+        function signOut() {
+            window.location.href = 'login.html';
+        }
+
+        // Connect Track My Appointments button to client_dashboard.html
+        document.getElementById('trackAppointmentBtn').addEventListener('click', function () {
+            window.location.href = 'client_dashboard.html';
+        });
+    </script>
+    <!-- ...your other scripts... -->
+</body>
+
+</html>

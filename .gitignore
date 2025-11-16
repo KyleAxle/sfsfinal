@@ -1,0 +1,31 @@
+# Environment variables - NEVER commit these!
+.env
+.env.local
+.env.*.local
+
+# PHP
+vendor/
+composer.lock
+*.log
+*.cache
+
+# Google API Client (large dependency - should be installed via composer)
+google-api-php-client/vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+

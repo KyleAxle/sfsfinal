@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Appointments Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
+            min-height: 100vh;
+        }
+        .dashboard-card {
+            border-radius: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            background: #fff;
+        }
+        .table thead th {
+            background: #3b82f6;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h2 class="mb-4 text-center fw-bold text-primary">Admin: All Appointments</h2>
+        <div class="card dashboard-card p-4">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Office</th>
+                            <th>Name</th>
+                            <th>User Type</th>
+                            <th>Student No.</th>
+                            <th>Concern</th>
+                            <th>Date Requested</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminAppointmentsTable">
+                        <tr>
+                            <td>Registrar Office</td>
+                            <td>Juan Dela Cruz</td>
+                            <td>Student</td>
+                            <td>202312345</td>
+                            <td>Request for Transcript</td>
+                            <td>2024-06-12</td>
+                            <td>09:00 AM - 09:30 AM</td>
+                            <td>
+                                <span class="badge bg-success status-badge">Confirmed</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-link btn-sm p-0 ms-2 track-btn"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#trackModal"
+                                    data-paper="Transcript of Records"
+                                    data-days="7 working days"
+                                    data-release="2024-06-21">
+                                    Track
+                                </button>
+                                <select class="form-select form-select-sm d-inline w-auto status-select" style="min-width:120px;">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Confirmed" selected>Confirmed</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CCIS Office</td>
+                            <td>Maria Santos</td>
+                            <td>Parent</td>
+                            <td>-</td>
+                            <td>Follow up on grades</td>
+                            <td>2024-06-13</td>
+                            <td>10:00 AM - 10:30 AM</td>
+                            <td>
+                                <span class="badge bg-warning text-dark status-badge">Pending</span>
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm d-inline w-auto status-select" style="min-width:120px;">
+                                    <option value="Pending" selected>Pending</option>
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <!-- Add more rows dynamically as needed -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Track Modal -->
+    <div class="modal fade" id="trackModal" tabindex="-1" aria-labelledby="trackModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+          <div class="modal-header border-0">
+            <h5 class="modal-title w-100" id="trackModalLabel">Track Registrar Request</h5>
+          </div>
+          <div class="modal-body">
+            <div id="trackDetails" class="mb-3"></div>
+            <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Show tracking info in modal when "Track" is clicked
+        document.querySelectorAll('.track-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const paper = this.getAttribute('data-paper');
+                const days = this.getAttribute('data-days');
+                const release = this.getAttribute('data-release');
+                document.getElementById('trackDetails').innerHTML = `
+                    <strong>Paper Type:</strong> ${paper}<br>
+                    <strong>Processing Days:</strong> ${days}<br>
+                    <strong>Expected Release Date:</strong> ${release}
+                `;
+            });
+        });
+
+        // Change status badge color and text when admin selects a new status
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.addEventListener('change', function () {
+                const badge = this.closest('tr').querySelector('.status-badge');
+                const status = this.value;
+                badge.textContent = status;
+                badge.className = 'badge status-badge'; // reset classes
+                if (status === "Pending") {
+                    badge.classList.add('bg-warning', 'text-dark');
+                } else if (status === "Confirmed") {
+                    badge.classList.add('bg-success');
+                } else if (status === "Completed") {
+                    badge.classList.add('bg-primary');
+                } else if (status === "Cancelled") {
+                    badge.classList.add('bg-danger');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
