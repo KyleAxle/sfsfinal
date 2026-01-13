@@ -15,7 +15,7 @@ if (!$clientId || !$clientSecret) {
 
 $client->setClientId($clientId);
 $client->setClientSecret($clientSecret);
-$client->setRedirectUri($redirectUri ?: 'http://localhost/sfs/google_callback.php');
+$client->setRedirectUri($redirectUri ?: 'http://localhost:8000/google_callback.php');
 
 if (isset($_GET['code'])) {
     $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
@@ -41,21 +41,22 @@ if (isset($_GET['code'])) {
     $pdo = require __DIR__ . '/config/db.php';
 
     // Check if user already exists
-    $stmt = $pdo->prepare("SELECT user_id FROM users WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT user_id FROM public.users WHERE email = ?");
     $stmt->execute([$email]);
     $existingUser = $stmt->fetch();
 
     if (!$existingUser) {
         // Register new user with a random password
+        // Schema uses password_hash column (not password)
         $random_password = bin2hex(random_bytes(8));
         $hashed_password = password_hash($random_password, PASSWORD_DEFAULT);
 
-        $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, password) VALUES (?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO public.users (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)");
         $stmt->execute([$first_name, $last_name, $email, $hashed_password]);
     }
 
     // Log in the user (fetch their info)
-    $stmt = $pdo->prepare("SELECT user_id, first_name, last_name FROM users WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT user_id, first_name, last_name FROM public.users WHERE email = ?");
     $stmt->execute([$email]);
     if ($row = $stmt->fetch()) {
         session_start();

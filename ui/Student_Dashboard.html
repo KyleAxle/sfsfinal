@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard</title>
+  <link rel="stylesheet" href="Student_Dashboard_CSS.css">
+  <!-- Optional Supabase config: replace with your project's values or leave blank to use localStorage fallback -->
+  <meta name="supabase-url" content="https://qqxznbyyttjetltturgf.supabase.co">
+  <meta name="supabase-key" content="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxeHpuYnl5dHRqZXRsdHR1cmdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NzYwMzcsImV4cCI6MjA3ODM1MjAzN30.YSntqIoI9Fgi-Nqr2_iE2EYPOE_Yyie73rQ1oRs5g1o">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <img src="C:\\Users\\cuber\\OneDrive\\Desktop\\Capstone 2025\\Picture\\cjclogo.png" alt="School Logo" class="logo">
+
+      <nav class="menu">
+        <a href="Track_Appointments.html" class="menu-item" style="background-color: rgba(255,255,255,0.1); margin-bottom: 20px;">📋 Track Appointments</a>
+        <div style="width: 85%; height: 1px; background-color: rgba(255,255,255,0.3); margin: 10px 0;"></div>
+        <a href="#" class="menu-item active">Deans Office</a>
+        <a href="#" class="menu-item">Cashier Office</a>
+        <a href="#" class="menu-item">Registrar Office</a>
+        <a href="#" class="menu-item">CCIS Office</a>
+        <a href="#" class="menu-item">Guidance Office</a>
+        <a href="#" class="menu-item">Assessment Office</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <h1 id="officeTitle">DEANS OFFICE</h1>
+          <div style="margin-left:auto;text-align:right">
+            <div id="welcomeText" style="font-weight:600"></div>
+            <button id="logoutBtn" style="background:#c33;color:#fff;border:none;padding:6px 10px;border-radius:4px;cursor:pointer">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <form class="request-form" id="appointmentForm">
+        <div class="form-group">
+          <label>Office</label>
+          <input type="text" id="office" name="office" value="Deans Office" readonly>
+        </div>
+
+        <div class="form-group" id="paperTypeGroup" style="display: none;">
+          <label>Paper Type</label>
+          <select id="paperType" name="paperType">
+            <option value="">Select paper</option>
+            <option value="transcript">Transcript of Records</option>
+            <option value="diploma">Diploma</option>
+            <option value="certificate">Certificate</option>
+            <option value="good-moral">Good Moral Certificate</option>
+            <option value="enrollment">Enrollment Certificate</option>
+            <option value="grades">Copy of Grades</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="processingDaysGroup" style="display: none;">
+          <label>Processing Days</label>
+          <input type="text" id="processingDays" name="processingDays" readonly>
+        </div>
+
+        <div class="form-group full">
+          <label>Concern/Reason</label>
+          <textarea id="concern" name="concern" rows="4" placeholder="Enter your concern or reason..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Date of Request</label>
+          <input type="date" id="dateOfRequest" name="dateOfRequest" required>
+        </div>
+
+        <div class="form-group">
+          <label>Available Time to Collect</label>
+          <select id="availableTime" name="availableTime">
+            <option value="">Select a time</option>
+            <option value="09:00-09:30">09:00 AM - 09:30 AM</option>
+            <option value="10:00-10:30">10:00 AM - 10:30 AM</option>
+            <option value="11:00-11:30">11:00 AM - 11:30 AM</option>
+            <option value="13:00-13:30">01:00 PM - 01:30 PM</option>
+            <option value="14:00-14:30">02:00 PM - 02:30 PM</option>
+            <option value="15:00-15:30">03:00 PM - 03:30 PM</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="expectedReleaseDateGroup" style="display: none;">
+          <label>Expected Release Date</label>
+          <input type="date" id="expectedReleaseDate" name="expectedReleaseDate" readonly>
+        </div>
+
+        <button type="submit" class="btn-submit">Book Appointment</button>
+      </form>
+    </main>
+  </div>
+
+  <script>
+    // Dashboard session handling: prefer Supabase session if configured, fallback to localStorage
+    (async function() {
+      // Init Supabase client if keys present
+      const SUPABASE_URL = document.querySelector('meta[name="supabase-url"]').content || '';
+      const SUPABASE_KEY = document.querySelector('meta[name="supabase-key"]').content || '';
+      let supabaseClient = null;
+      try {
+        if (SUPABASE_URL && SUPABASE_KEY && window.supabase && typeof window.supabase.createClient === 'function') {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+      } catch (err) {
+        console.warn('Supabase init failed on dashboard:', err);
+        supabaseClient = null;
+      }
+
+      let user = null;
+      let userProfile = null;
+
+      if (supabaseClient) {
+        try {
+          // Get authenticated user from Supabase Auth
+          const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+          if (authError) {
+            console.warn('Supabase getUser error:', authError.message);
+          } else if (authData?.user) {
+            user = authData.user;
+            
+            // Fetch user profile from users table
+            try {
+              const { data: profileData, error: profileError, status } = await supabaseClient
+                .from('users')
+                .select('full_name, email, phone, dob, age')
+                .eq('id', user.id)
+                .maybeSingle(); // tolerate 0 rows without throwing 406
+              
+              if (!profileError && profileData) {
+                userProfile = profileData;
+              } else if (status === 406 || profileError?.code === 'PGRST116') {
+                // No profile yet; fall back to auth metadata
+                console.warn('No user profile yet; proceeding with auth metadata.');
+              } else {
+                console.warn('Could not fetch user profile:', profileError?.message || profileError || status);
+              }
+            } catch (profileErr) {
+              console.warn('Error fetching user profile:', profileErr);
+            }
+          }
+        } catch (err) {
+          console.warn('Supabase getUser failed:', err);
+        }
+      }
+
+      // localStorage fallback
+      if (!user) {
+        const currentUserEmail = localStorage.getItem('currentUser');
+        if (!currentUserEmail) {
+          window.location.href = 'Email_Login.html';
+          return;
+        }
+
+        const usersJSON = localStorage.getItem('users');
+        const users = usersJSON ? JSON.parse(usersJSON) : {};
+        user = users[currentUserEmail];
+        if (!user) {
+          localStorage.removeItem('currentUser');
+          window.location.href = 'Email_Login.html';
+          return;
+        }
+        // annotate user object so code below can handle both shapes
+        user = Object.assign({}, user, { email: currentUserEmail });
+        userProfile = user;
+      }
+
+      // Show welcome text and prefill form fields
+      const welcomeText = document.getElementById('welcomeText');
+      const displayName = userProfile?.full_name || user?.user_metadata?.fullName || user?.fullName || user?.email || 'User';
+      welcomeText.textContent = `Welcome, ${displayName}`;
+
+      // Set today's date as default for Date of Request
+      const dateOfRequestInput = document.getElementById('dateOfRequest');
+      const processingDaysInput = document.getElementById('processingDays');
+      const expectedReleaseDateInput = document.getElementById('expectedReleaseDate');
+      const paperTypeSelect = document.getElementById('paperType');
+      
+      if (dateOfRequestInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateOfRequestInput.value = today;
+      }
+
+      // Paper type to processing days mapping
+      const paperTypeProcessingDays = {
+        'transcript': 7,
+        'diploma': 14,
+        'certificate': 5,
+        'good-moral': 3,
+        'enrollment': 2,
+        'grades': 5,
+        'other': 7
+      };
+
+      // Function to set processing days based on paper type
+      function setProcessingDaysFromPaperType() {
+        const selectedPaperType = paperTypeSelect?.value;
+        if (selectedPaperType && processingDaysInput) {
+          const days = paperTypeProcessingDays[selectedPaperType] || 0;
+          processingDaysInput.value = days > 0 ? days.toString() : '';
+          // Trigger calculation of expected release date
+          calculateExpectedReleaseDate();
+        } else if (processingDaysInput) {
+          processingDaysInput.value = '';
+          if (expectedReleaseDateInput) {
+            expectedReleaseDateInput.value = '';
+          }
+        }
+      }
+
+      // Function to calculate expected release date
+      function calculateExpectedReleaseDate() {
+        const dateOfRequest = dateOfRequestInput?.value;
+        const processingDays = parseInt(processingDaysInput?.value) || 0;
+        
+        if (dateOfRequest && processingDays > 0 && expectedReleaseDateInput) {
+          const requestDate = new Date(dateOfRequest);
+          // Add processing days using business days (excluding weekends)
+          let daysAdded = 0;
+          let currentDate = new Date(requestDate);
+          
+          while (daysAdded < processingDays) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            // Skip weekends (Saturday = 6, Sunday = 0)
+            if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+              daysAdded++;
+            }
+          }
+          
+          // Format as YYYY-MM-DD
+          const year = currentDate.getFullYear();
+          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+          const day = String(currentDate.getDate()).padStart(2, '0');
+          expectedReleaseDateInput.value = `${year}-${month}-${day}`;
+        } else if (expectedReleaseDateInput) {
+          expectedReleaseDateInput.value = '';
+        }
+      }
+
+      // Add event listener to paper type dropdown
+      if (paperTypeSelect) {
+        paperTypeSelect.addEventListener('change', setProcessingDaysFromPaperType);
+      }
+
+      // Add event listeners to auto-calculate expected release date
+      if (dateOfRequestInput) {
+        dateOfRequestInput.addEventListener('change', calculateExpectedReleaseDate);
+      }
+      if (processingDaysInput) {
+        processingDaysInput.addEventListener('input', calculateExpectedReleaseDate);
+        processingDaysInput.addEventListener('change', calculateExpectedReleaseDate);
+      }
+
+      // Setup menu item click handlers - run after DOM is ready
+      function setupMenuHandlers() {
+        const menuItems = document.querySelectorAll('.menu-item');
+        const officeInput = document.getElementById('office');
+        const paperTypeGroup = document.getElementById('paperTypeGroup');
+        const processingDaysGroup = document.getElementById('processingDaysGroup');
+        const expectedReleaseDateGroup = document.getElementById('expectedReleaseDateGroup');
+        const paperTypeSelect = document.getElementById('paperType');
+        
+        function updateOfficeFields(officeName) {
+          const officeTitle = document.getElementById('officeTitle');
+          if (officeTitle && officeInput) {
+            officeTitle.textContent = officeName.toUpperCase();
+            officeInput.value = officeName;
+          }
+          
+          // Show/hide Paper Type, Processing Days, and Expected Release Date only for Registrar Office
+          const isRegistrarOffice = officeName.toLowerCase() === 'registrar office';
+          if (paperTypeGroup) {
+            paperTypeGroup.style.display = isRegistrarOffice ? 'block' : 'none';
+          }
+          if (processingDaysGroup) {
+            processingDaysGroup.style.display = isRegistrarOffice ? 'block' : 'none';
+          }
+          if (expectedReleaseDateGroup) {
+            expectedReleaseDateGroup.style.display = isRegistrarOffice ? 'block' : 'none';
+          }
+          
+          // Clear paper type, processing days, and expected release date if not Registrar Office
+          if (!isRegistrarOffice) {
+            if (paperTypeSelect) {
+              paperTypeSelect.value = '';
+              paperTypeSelect.removeAttribute('required');
+            }
+            if (processingDaysInput) {
+              processingDaysInput.value = '';
+            }
+            if (expectedReleaseDateInput) {
+              expectedReleaseDateInput.value = '';
+            }
+          } else {
+            if (paperTypeSelect) {
+              paperTypeSelect.setAttribute('required', 'required');
+            }
+          }
+        }
+        
+        // Add click event listeners to all menu items
+        menuItems.forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            menuItems.forEach(mi => mi.classList.remove('active'));
+            item.classList.add('active');
+            const officeName = item.textContent.trim();
+            updateOfficeFields(officeName);
+          });
+        });
+        
+        // Initialize office fields on page load (Deans Office is active by default)
+        const activeOffice = document.querySelector('.menu-item.active');
+        if (activeOffice) {
+          updateOfficeFields(activeOffice.textContent.trim());
+        }
+      }
+      
+      // Call setup after everything is loaded
+      setupMenuHandlers();
+
+      // Logout button
+      const logoutBtn = document.getElementById('logoutBtn');
+      logoutBtn.addEventListener('click', async () => {
+        // If using Supabase, sign out there as well
+        try {
+          if (supabaseClient) await supabaseClient.auth.signOut();
+        } catch (err) {
+          console.warn('Supabase signOut failed:', err);
+        }
+        localStorage.removeItem('currentUser');
+        window.location.href = 'Email_Login.html';
+      });
+
+      // Handle form submission
+      const appointmentForm = document.getElementById('appointmentForm');
+      if (appointmentForm) {
+        appointmentForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const formData = {
+            office: document.getElementById('office').value,
+            paperType: document.getElementById('paperType').value,
+            processingDays: document.getElementById('processingDays').value,
+            concern: document.getElementById('concern').value,
+            dateOfRequest: document.getElementById('dateOfRequest').value,
+            availableTime: document.getElementById('availableTime').value,
+            expectedReleaseDate: document.getElementById('expectedReleaseDate').value,
+            userId: user?.id || null,
+            userEmail: user?.email || userProfile?.email || null
+          };
+
+          console.log('Form submitted:', formData);
+          
+          // Save appointment to database
+          try {
+            if (supabaseClient && user?.id) {
+              const appointmentData = {
+                user_id: user.id,
+                office: formData.office,
+                paper_type: formData.paperType || null,
+                processing_days: formData.processingDays ? parseInt(formData.processingDays) : null,
+                concern: formData.concern,
+                date_of_request: formData.dateOfRequest,
+                available_time: formData.availableTime || null,
+                expected_release_date: formData.expectedReleaseDate || null,
+                status: 'pending'
+              };
+
+              const { data, error } = await supabaseClient
+                .from('appointments')
+                .insert([appointmentData])
+                .select()
+                .single();
+
+              if (error) {
+                console.error('Error saving appointment:', error);
+                alert('Failed to submit appointment. Please try again. Error: ' + error.message);
+                return;
+              }
+
+              alert('Appointment request submitted successfully!');
+              // Optionally redirect to track appointments page
+              // window.location.href = 'Track_Appointments.html';
+            } else {
+              // Fallback: save to localStorage
+              const appointmentsJSON = localStorage.getItem('appointments') || '[]';
+              const appointments = JSON.parse(appointmentsJSON);
+              const newAppointment = {
+                id: Date.now().toString(),
+                userEmail: formData.userEmail,
+                ...formData,
+                status: 'pending',
+                created_at: new Date().toISOString()
+              };
+              appointments.push(newAppointment);
+              localStorage.setItem('appointments', JSON.stringify(appointments));
+              alert('Appointment request submitted successfully!');
+            }
+          } catch (err) {
+            console.error('Error submitting appointment:', err);
+            alert('Failed to submit appointment. Please try again.');
+            return;
+          }
+          
+          // Reset form after submission
+          appointmentForm.reset();
+          // Restore default values
+          const dateInput = document.getElementById('dateOfRequest');
+          const officeField = document.getElementById('office');
+          if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+          }
+          if (officeField) {
+            const activeOffice = document.querySelector('.menu-item.active');
+            if (activeOffice && !activeOffice.href) {
+              officeField.value = activeOffice.textContent.trim();
+            } else {
+              officeField.value = 'Deans Office';
+            }
+          }
+          
+          // Clear paper type fields if not Registrar Office
+          const paperTypeSelect = document.getElementById('paperType');
+          if (paperTypeSelect) {
+            paperTypeSelect.value = '';
+          }
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>

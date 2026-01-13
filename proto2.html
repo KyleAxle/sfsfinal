@@ -1,306 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <title>School Appointment System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #e0e7ff 0%, #f8fafc 100%);
-            min-height: 100vh;
-            margin-left: 260px !important;
-        }
-
-        #sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 260px;
-            background: #212529;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            z-index: 1040;
-            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
-        }
-
-        @media (max-width: 700px) {
-            #sidebar {
-                width: 100vw;
-                height: auto;
-                position: static;
-            }
-
-            body {
-                margin-left: 0 !important;
-            }
-        }
-
-        .main-title {
-            font-size: 2.2rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: #3b82f6;
-            text-shadow: 0 4px 24px rgba(59, 130, 246, 0.10);
-        }
-
-        .office-card {
-            cursor: pointer;
-            transition: box-shadow 0.2s, transform 0.2s;
-            border: none;
-            border-radius: 1rem;
-            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10);
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(4px);
-        }
-
-        .office-card:hover {
-            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.18);
-            transform: translateY(-4px) scale(1.03);
-            border-color: #6366f1;
-        }
-
-        .card-title {
-            color: #3b82f6;
-            font-weight: 700;
-        }
-
-        .modal-content {
-            border-radius: 1.2rem;
-            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.18);
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(8px);
-        }
-
-        .modal-header {
-            background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
-            color: #fff;
-            border-top-left-radius: 1.2rem;
-            border-top-right-radius: 1.2rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
-            border: none;
-            font-weight: 600;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
-        }
-
-        .form-label {
-            font-weight: 500;
-            color: #374151;
-        }
-
-        #registrarFields {
-            display: none;
-        }
-
-        @media (max-width: 600px) {
-            .main-title {
-                font-size: 1.3rem;
-            }
-        }
-    </style>
+    <title>Book Appointment • CJC School Frontline Services</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/css/book.css">
+    <link rel="stylesheet" href="assets/css/ai_chatbot.css">
 </head>
-
 <body>
-    <!-- Sidebar -->
-    <div id="sidebar">
-        <div>
-            <div style="padding: 2rem 1.5rem 1rem 1.5rem; border-bottom: 1px solid #343a40;">
-                <div style="font-size: 1.1rem; margin-bottom: 0.5rem;">
-                    <!-- Greeting -->
-                    <span id="greeting" style="display:block; margin-bottom:0.5rem;">Hello, <span id="profileName">Loading...</span>!</span>
+    <div class="booking-shell">
+        <aside class="booking-sidebar">
+            <img src="img/cjclogo.png" alt="CJC Logo" class="booking-logo">
+            <nav class="booking-menu">
+                <a href="proto2.html" class="active">Book Appointment</a>
+                <a href="client_dashboard.html">Track Appointments</a>
+                <a href="profile.html">My Profile</a>
+            </nav>
+            <button id="logoutBtn" class="logout-btn">Sign Out</button>
+        </aside>
+
+        <main class="booking-main">
+            <header class="booking-header">
+                <h1>BOOK APPOINTMENT</h1>
+                <div class="profile-info">
+                    <img id="headerProfilePicture" src="" alt="Profile" class="header-profile-picture" style="display:none;">
+                    <div class="profile-text">
+                        <div id="greeting">Hello, <span id="profileName">Loading...</span></div>
+                        <div id="profileEmail" style="font-size:0.85rem;opacity:.85;"></div>
+                    </div>
                 </div>
-                <div style="font-size: 0.97rem; color: #adb5bd;">
-                    <span id="profileEmail"></span>
+            </header>
+
+            <section>
+                <div class="office-menu" id="officeMenu">
+                    <div style="text-align:center;padding:20px;color:var(--muted);">Loading offices...</div>
                 </div>
-            </div>
-            <!-- Track Appointments Button -->
-            <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
-                <button id="trackAppointmentBtn" class="btn btn-outline-primary w-100 mb-3">
-                    <i class="bi bi-search"></i> Track My Appointments
+            </section>
+
+            <!-- Messages Widget -->
+            <div id="messagesWidget" class="ai-chatbot-widget" style="right: 24px; bottom: 100px;">
+                <button id="messagesToggle" class="ai-chatbot-toggle" title="Messages from Staff" style="background: #0066cc;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" fill="currentColor"/>
+                        <path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z" fill="currentColor"/>
+                    </svg>
+                    <span>Messages</span>
+                    <span id="messagesBadge" class="messages-badge" style="display: none;">0</span>
                 </button>
-            </div>
-        </div>
-        <div style="padding: 1.5rem;">
-            <button onclick="signOut()" style="
-                width: 100%;
-                background: #dc3545;
-                color: #fff;
-                border: none;
-                border-radius: 6px;
-                padding: 12px 0;
-                font-size: 1.08rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: background 0.2s;
-            ">Sign Out</button>
-        </div>
-    </div>
-
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <div class="main-title mb-2">Welcome to CJC - School Frontline Services</div>
-            <p class="text-secondary mb-0" style="font-size:1.1rem;opacity:0.85;">Book your appointment with any office
-                below</p>
-        </div>
-        <div class="row g-4 justify-content-center">
-            <!-- Office Cards -->
-            <div class="col-md-4 col-sm-6">
-                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
-                    data-office="Registrar Office">
-                    <div class="card-body">
-                        <h5 class="card-title">Registrar Office</h5>
-                        <p class="card-text">Academic records, enrollment, and transcripts.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
-                    data-office="Cashier Office">
-                    <div class="card-body">
-                        <h5 class="card-title">Cashier Office</h5>
-                        <p class="card-text">Payments, receipts, and financial concerns.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
-                    data-office="CCIS Office">
-                    <div class="card-body">
-                        <h5 class="card-title">CCIS Office</h5>
-                        <p class="card-text">College of Computing and Information Sciences.</p>
-                    </div>
-                </div>
-            </div>
-            <!-- Dean (CCIS Office) Card -->
-            <div class="col-md-4 col-sm-6">
-                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
-                    data-office="Dean (CCIS Office)">
-                    <div class="card-body">
-                        <h5 class="card-title">Dean (CCIS Office)</h5>
-                        <p class="card-text">Book an appointment with the Dean of CCIS.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
-                    data-office="Guidance Office">
-                    <div class="card-body">
-                        <h5 class="card-title">Guidance Office</h5>
-                        <p class="card-text">Counseling and student support.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card office-card h-100" data-bs-toggle="modal" data-bs-target="#appointmentModal"
-                    data-office="Assessment Office">
-                    <div class="card-body">
-                        <h5 class="card-title">Assessment Office</h5>
-                        <p class="card-text">Student assessment and evaluation.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Appointment Modal -->
-    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <form class="modal-content" id="appointmentForm">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title" id="appointmentModalLabel">Book Appointment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body pt-0">
-                    <div class="mb-3">
-                        <label class="form-label">Office</label>
-                        <input type="text" class="form-control" id="officeInput" readonly>
-                    </div>
-                    <!-- Registrar Office Extra Fields -->
-                    <div id="registrarFields" style="display:none;">
-                        <div class="mb-3">
-                            <label class="form-label">Paper Type</label>
-                            <select class="form-select" id="paperType">
-                                <option value="">Select paper</option>
-                                <option value="Transcript of Records">Transcript of Records</option>
-                                <option value="Diploma">Diploma</option>
-                                <option value="Certificate">Certificate</option>
-                                <option value="Others">Others</option>
-                            </select>
+                <div id="messagesPanel" class="ai-chatbot-panel">
+                    <!-- Conversation List View -->
+                    <div id="conversationListView" class="messages-view">
+                        <div class="ai-chatbot-header">
+                            <div>
+                                <h3>Messages from Staff</h3>
+                                <p>View and reply to staff messages</p>
+                            </div>
+                            <button id="messagesClose" class="ai-chatbot-close">&times;</button>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Processing Days</label>
-                            <input type="text" class="form-control" id="processingDays" readonly>
+                        <div id="messagesList" class="ai-chatbot-messages">
+                            <div class="ai-message ai-assistant">
+                                <div class="ai-message-content">
+                                    <p>Loading conversations...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Concern/Reason</label>
-                        <textarea class="form-control" id="concernText" rows="2" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Date of Request</label>
-                        <input type="date" class="form-control" id="appointmentDate" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Available Time to Collect</label>
-                        <select class="form-select" id="timeSelect" required>
-                            <option value="">Select a time</option>
-                        </select>
-                    </div>
-                    <div class="mb-3" id="releaseDateField" style="display:none;">
-                        <label class="form-label">Expected Release Date</label>
-                        <input type="text" class="form-control" id="releaseDate" readonly>
+                    
+                    <!-- Message Thread View -->
+                    <div id="messageThreadView" class="messages-view" style="display: none;">
+                        <div class="ai-chatbot-header">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <button id="backToConversations" class="back-button" title="Back to conversations">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                                    </svg>
+                                </button>
+                                <div>
+                                    <h3 id="threadHeaderName">Staff Member</h3>
+                                    <p id="threadHeaderSubtitle">Conversation</p>
+                                </div>
+                            </div>
+                            <button id="closeThread" class="ai-chatbot-close">&times;</button>
+                        </div>
+                        <div id="messageThread" class="ai-chatbot-messages">
+                            <div class="ai-message ai-assistant">
+                                <div class="ai-message-content">
+                                    <p>Loading messages...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ai-chatbot-input-area">
+                            <textarea id="messageThreadInput" placeholder="Type your reply..." rows="2"></textarea>
+                            <button id="messageThreadSend" class="ai-chatbot-send">Send</button>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 pt-0">
-                    <button type="submit" class="btn btn-primary w-100">Book Appointment</button>
+            </div>
+
+            <!-- AI Chatbot Assistant -->
+            <div id="aiChatbotWidget" class="ai-chatbot-widget">
+                <button id="aiChatbotToggle" class="ai-chatbot-toggle" title="Ask AI Assistant">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" fill="currentColor"/>
+                        <path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z" fill="currentColor"/>
+                    </svg>
+                    <span>AI Assistant</span>
+                </button>
+                <div id="aiChatbotPanel" class="ai-chatbot-panel">
+                    <div class="ai-chatbot-header">
+                        <div>
+                            <h3>AI Assistant</h3>
+                            <p>Ask me anything about appointments</p>
+                        </div>
+                        <button id="aiChatbotClose" class="ai-chatbot-close">&times;</button>
+                    </div>
+                    <div id="aiChatbotMessages" class="ai-chatbot-messages">
+                        <div class="ai-message ai-assistant">
+                            <div class="ai-message-content">
+                                <p>Hello! I'm your AI assistant. I can help you:</p>
+                                <ul>
+                                    <li>Find the right office for your concern</li>
+                                    <li>Understand the appointment booking process</li>
+                                    <li>Answer questions about office hours and services</li>
+                                </ul>
+                                <p>How can I help you today?</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ai-chatbot-input-area">
+                        <textarea id="aiChatbotInput" placeholder="Type your question..." rows="2"></textarea>
+                        <button id="aiChatbotSend" class="ai-chatbot-send">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <form id="appointmentForm" class="booking-form content-panel">
+                <input type="hidden" id="officeId" name="office_id" value="">
+
+                <div class="full">
+                    <label class="form-label">Office</label>
+                    <input id="officeName" class="form-control" value="" readonly>
+                </div>
+
+                <div class="full registrar-only" style="display:none;">
+                    <label class="form-label">Paper Type</label>
+                    <select id="paperType" class="form-select">
+                        <option value="">Select paper type</option>
+                        <option value="Transcript of Records">Transcript of Records</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Certificate">Certificate</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+
+                <div class="registrar-only" style="display:none;">
+                    <label class="form-label">Processing Days</label>
+                    <input id="processingDays" class="form-control" readonly>
+                </div>
+
+				<div>
+					<label class="form-label">Date of Request</label>
+					<input type="date" id="appointmentDate" class="form-control" required>
+				</div>
+
+                <div>
+                    <label class="form-label">Available Time</label>
+                    <select id="timeSelect" class="form-select" required>
+                        <option value="">Select a time</option>
+                    </select>
+                </div>
+
+                <div class="full" id="blockNotice" style="display:none;">
+                    <div class="blocked-notice">
+                        <strong>Office blocked slots for this date</strong>
+                        <ul id="blockReasonList"></ul>
+                    </div>
+                </div>
+
+                <div class="registrar-only" style="display:none;">
+                    <label class="form-label">Expected Release Date</label>
+                    <input id="releaseDate" class="form-control" readonly>
+                </div>
+
+                <div class="full">
+                    <label class="form-label">Concern / Reason</label>
+                    <textarea id="concernText" class="form-textarea" rows="4" required placeholder="Describe your concern..."></textarea>
+                </div>
+
+                <div class="booking-actions">
+                    <button type="submit" class="book-submit">Submit Request</button>
                 </div>
             </form>
-        </div>
+        </main>
     </div>
 
-    <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content text-center">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title w-100" id="successModalLabel">Reservation Completed!</h5>
-                </div>
-                <div class="modal-body">
-                    <p>Your appointment has been successfully booked.</p>
-                    <div id="appointmentDetails" class="text-start mb-3"></div>
-                    <button type="button" class="btn btn-success w-100" data-bs-dismiss="modal">OK</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Office time slots
+        const officeMenu = document.getElementById('officeMenu');
+        const officeNameInput = document.getElementById('officeName');
+        const officeIdInput = document.getElementById('officeId');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const paperTypeSelect = document.getElementById('paperType');
+        const processingDaysInput = document.getElementById('processingDays');
+		const appointmentDateInput = document.getElementById('appointmentDate');
+        const releaseDateInput = document.getElementById('releaseDate');
+        const registrarFields = document.querySelectorAll('.registrar-only');
+        const timeSelect = document.getElementById('timeSelect');
+        const concernText = document.getElementById('concernText');
+        const blockNotice = document.getElementById('blockNotice');
+        const blockReasonList = document.getElementById('blockReasonList');
+        let bookedSlots = new Set();
+        let blockedRanges = [];
+        let blockedSlotReasons = new Map();
+
+        let offices = [];
+        let officeIdMap = {};
+        let officeConfigs = {};
+
         const defaultTimes = [
             "09:00 AM - 09:30 AM",
+            "09:30 AM - 10:00 AM",
             "10:00 AM - 10:30 AM",
+            "10:30 AM - 11:00 AM",
             "11:00 AM - 11:30 AM",
+            "11:30 AM - 12:00 PM",
             "01:00 PM - 01:30 PM",
+            "01:30 PM - 02:00 PM",
             "02:00 PM - 02:30 PM",
-            "03:00 PM - 03:30 PM"
-        ];
-        const deanTimes = [
-            "10:00 AM - 11:00 AM",
-            "02:00 PM - 03:00 PM"
+            "02:30 PM - 03:00 PM",
+            "03:00 PM - 03:30 PM",
+            "03:30 PM - 04:00 PM"
         ];
 
-        // Registrar paper processing days
+        const deanTimes = [
+            "09:00 AM - 09:30 AM",
+            "09:30 AM - 10:00 AM",
+            "10:00 AM - 10:30 AM",
+            "10:30 AM - 11:00 AM",
+            "11:00 AM - 11:30 AM",
+            "11:30 AM - 12:00 PM",
+            "01:00 PM - 01:30 PM",
+            "01:30 PM - 02:00 PM",
+            "02:00 PM - 02:30 PM",
+            "02:30 PM - 03:00 PM",
+            "03:00 PM - 03:30 PM",
+            "03:30 PM - 04:00 PM"
+        ];
+
         const paperProcessing = {
             "Transcript of Records": 7,
             "Diploma": 5,
@@ -308,179 +253,865 @@
             "Others": 2
         };
 
-        // Show/hide registrar fields and update time slots
-        document.querySelectorAll('.office-card').forEach(card => {
-            card.addEventListener('click', function () {
-                const office = this.getAttribute('data-office');
-                document.getElementById('officeInput').value = office;
+        // Set minimum date to today (users can't book in the past)
+        const today = new Date();
+        const minDate = today.toISOString().split('T')[0];
+        
+        // Set maximum date to 90 days in the future (reasonable booking window)
+        const maxDate = new Date();
+        maxDate.setDate(maxDate.getDate() + 90);
+        const maxDateStr = maxDate.toISOString().split('T')[0];
+        
+        // Set default to today
+        appointmentDateInput.value = minDate;
+        appointmentDateInput.min = minDate;
+        appointmentDateInput.max = maxDateStr;
 
-                // Registrar fields
-                const registrarFields = document.getElementById('registrarFields');
-                const releaseDateField = document.getElementById('releaseDateField');
-                const appointmentDate = document.getElementById('appointmentDate');
-                if (office === "Registrar Office") {
-                    registrarFields.style.display = "block";
-                    releaseDateField.style.display = "block";
-                    // Set Date of Request to today and disable editing
-                    const today = new Date().toISOString().split('T')[0];
-                    appointmentDate.value = today;
-                    appointmentDate.readOnly = true;
-                } else {
-                    registrarFields.style.display = "none";
-                    releaseDateField.style.display = "none";
-                    document.getElementById('paperType').value = "";
-                    document.getElementById('processingDays').value = "";
-                    document.getElementById('releaseDate').value = "";
-                    // Enable editing and clear date for other offices
-                    appointmentDate.readOnly = false;
-                    appointmentDate.value = "";
-                }
+        function setOffice(officeName) {
+            // Update active chip
+            const chips = document.querySelectorAll('.office-chip');
+            chips.forEach(chip => chip.classList.toggle('active', chip.dataset.office === officeName));
+            
+            officeNameInput.value = officeName;
+            officeIdInput.value = officeIdMap[officeName] || 1;
 
-                // Time slots
-                const timeSelect = document.getElementById('timeSelect');
-                timeSelect.innerHTML = '<option value="">Select a time</option>';
-                let times = defaultTimes;
-                if (office === "Dean (CCIS Office)") {
-                    times = deanTimes;
-                }
-                times.forEach(time => {
-                    const opt = document.createElement('option');
-                    opt.textContent = time;
-                    timeSelect.appendChild(opt);
-                });
+            const isRegistrar = officeName.toLowerCase().includes('registrar');
+            registrarFields.forEach(el => {
+                el.style.display = isRegistrar ? 'block' : 'none';
             });
-        });
 
-        // Update processing days and release date for registrar
-        document.getElementById('paperType').addEventListener('change', function () {
-            const paper = this.value;
-            const days = paperProcessing[paper] || "";
-            document.getElementById('processingDays').value = days || "";
-            updateReleaseDate();
-        });
+            paperTypeSelect.required = isRegistrar;
+            if (!isRegistrar) {
+                paperTypeSelect.value = '';
+                processingDaysInput.value = '';
+                releaseDateInput.value = '';
+            }
 
-        document.getElementById('appointmentDate').addEventListener('change', updateReleaseDate);
+            // Don't enforce current date - let users select their preferred date
+            // enforceCurrentDate();
 
-        function updateReleaseDate() {
-            const paper = document.getElementById('paperType').value;
-            const days = paperProcessing[paper];
-            const dateStr = document.getElementById('appointmentDate').value;
-            if (days && dateStr) {
-                const date = new Date(dateStr);
-                // Add working days (skip weekends)
-                let added = 0;
-                while (added < days) {
-                    date.setDate(date.getDate() + 1);
-                    if (date.getDay() !== 0 && date.getDay() !== 6) {
-                        added++;
-                    }
+            updateTimeOptions(officeName);
+            loadBookedSlots();
+        }
+
+        function getStartTime(rangeText) {
+            if (!rangeText) return '';
+            const [startPart] = rangeText.split('-');
+            const start = startPart.trim();
+            const match = start.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (!match) return '';
+            let hour = parseInt(match[1], 10);
+            const minute = match[2];
+            const ampm = match[3].toUpperCase();
+            if (ampm === 'PM' && hour !== 12) hour += 12;
+            if (ampm === 'AM' && hour === 12) hour = 0;
+            return `${hour.toString().padStart(2, '0')}:${minute}:00`;
+        }
+
+        function formatTimeLabel(timeValue) {
+            if (!timeValue) return '--';
+            const [hourStr, minute] = timeValue.split(':');
+            let hour = parseInt(hourStr, 10);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            hour = hour % 12 || 12;
+            return `${hour}:${minute} ${ampm}`;
+        }
+
+        function formatRange(start, end) {
+            return `${formatTimeLabel(start)} - ${formatTimeLabel(end)}`;
+        }
+
+        // Global escapeHtml function
+        function escapeHtml(str = '') {
+            return String(str).replace(/[&<>"']/g, (char) => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[char] || char);
+        }
+        
+        // Also define it in AI chatbot scope for backward compatibility
+        window.escapeHtml = escapeHtml;
+
+        function buildBlockedReasonMap(ranges) {
+            const map = new Map();
+            ranges.forEach(range => {
+                if (!range.start_time || !range.end_time) return;
+                const reason = (range.reason || '').trim();
+                const start = new Date(`1970-01-01T${range.start_time}`);
+                if (isNaN(start)) return;
+                const end = new Date(`1970-01-01T${range.end_time}`);
+                const safeEnd = isNaN(end) ? start : end;
+                const cursor = new Date(start);
+                while (cursor < safeEnd) {
+                    const key = cursor.toTimeString().slice(0, 8);
+                    map.set(key, reason);
+                    cursor.setMinutes(cursor.getMinutes() + 30);
                 }
-                // Format as YYYY-MM-DD for database
-                const yyyy = date.getFullYear();
-                const mm = String(date.getMonth() + 1).padStart(2, '0');
-                const dd = String(date.getDate()).padStart(2, '0');
-                document.getElementById('releaseDate').value = `${yyyy}-${mm}-${dd}`;
-            } else {
-                document.getElementById('releaseDate').value = "";
+            });
+            return map;
+        }
+
+        function renderBlockedReasons() {
+            if (!blockedRanges.length) {
+                blockNotice.style.display = 'none';
+                blockReasonList.innerHTML = '';
+                return;
+            }
+            blockNotice.style.display = 'block';
+            blockReasonList.innerHTML = blockedRanges.map(range => `
+                <li>
+                    <span>${formatRange(range.start_time, range.end_time)}</span>
+                    <span style="color:var(--muted);"> - ${escapeHtml(range.reason || 'Office unavailable')}</span>
+                </li>
+            `).join('');
+        }
+
+        function generateTimeSlots(openingTime, closingTime, intervalMinutes) {
+            const slots = [];
+            const [openHour, openMin] = openingTime.split(':').map(Number);
+            const [closeHour, closeMin] = closingTime.split(':').map(Number);
+            
+            const start = new Date(1970, 0, 1, openHour, openMin);
+            const end = new Date(1970, 0, 1, closeHour, closeMin);
+            const current = new Date(start);
+            
+            while (current < end) {
+                const startTime = new Date(current);
+                const endTime = new Date(current);
+                endTime.setMinutes(endTime.getMinutes() + intervalMinutes);
+                
+                if (endTime <= end) {
+                    const startStr = formatTimeLabel(startTime.toTimeString().slice(0, 5));
+                    const endStr = formatTimeLabel(endTime.toTimeString().slice(0, 5));
+                    slots.push(`${startStr} - ${endStr}`);
+                }
+                
+                current.setMinutes(current.getMinutes() + intervalMinutes);
+            }
+            
+            return slots;
+        }
+
+        function updateTimeOptions(officeName) {
+            const office = offices.find(o => o.office_name === officeName);
+            if (!office) return;
+            
+            const config = officeConfigs[office.office_id] || {
+                opening_time: '09:00',
+                closing_time: '16:00',
+                slot_interval_minutes: 30
+            };
+            
+            const times = generateTimeSlots(
+                config.opening_time,
+                config.closing_time,
+                config.slot_interval_minutes
+            );
+            
+            timeSelect.innerHTML = '';
+
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Select a time';
+            placeholder.disabled = true;
+            placeholder.selected = true;
+            timeSelect.appendChild(placeholder);
+
+            times.forEach(time => {
+                const opt = document.createElement('option');
+                opt.value = time;
+                opt.dataset.base = time;
+                opt.dataset.start = getStartTime(time);
+                opt.textContent = time;
+                timeSelect.appendChild(opt);
+            });
+
+            markUnavailableSlots();
+        }
+
+        async function loadBookedSlots() {
+            const officeId = officeIdInput.value;
+            const date = appointmentDateInput.value;
+            if (!officeId || !date) {
+                bookedSlots = new Set();
+                markUnavailableSlots();
+                return;
+            }
+            try {
+                const res = await fetch(`get_booked_slots.php?office_id=${encodeURIComponent(officeId)}&date=${encodeURIComponent(date)}`);
+                if (!res.ok) throw new Error('Network error');
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                bookedSlots = new Set((data.slots || []).map(slot => slot.trim()));
+                blockedRanges = Array.isArray(data.blocked_ranges) ? data.blocked_ranges : [];
+                blockedSlotReasons = buildBlockedReasonMap(blockedRanges);
+                renderBlockedReasons();
+            } catch (err) {
+                console.warn('Failed to load booked slots:', err.message);
+                bookedSlots = new Set();
+                blockedRanges = [];
+                blockedSlotReasons = new Map();
+                renderBlockedReasons();
+            }
+            markUnavailableSlots();
+        }
+
+        function markUnavailableSlots() {
+            Array.from(timeSelect.options).forEach(option => {
+                if (!option.dataset.start) return;
+                const startKey = option.dataset.start;
+                const isBooked = bookedSlots.has(startKey);
+                option.disabled = isBooked;
+                if (isBooked) {
+                    const reason = blockedSlotReasons.get(startKey);
+                    option.textContent = reason
+                        ? `${option.dataset.base} (Blocked: ${reason || 'Unavailable'})`
+                        : `${option.dataset.base} (Full)`;
+                } else {
+                    option.textContent = option.dataset.base;
+                }
+            });
+            if (timeSelect.value && timeSelect.selectedOptions[0]?.disabled) {
+                timeSelect.value = '';
             }
         }
 
-        // Office name to office_id mapping (update these IDs to match your DB)
-        const officeIdMap = {
-            "Registrar Office": 1,
-            "Cashier Office": 2,
-            "CCIS Office": 3,
-            "Dean (CCIS Office)": 4,
-            "Guidance Office": 5,
-            "Assessment Office": 6
-        };
+        function updateReleaseDate() {
+            const paper = paperTypeSelect.value;
+            const days = paperProcessing[paper];
+            const dateStr = appointmentDateInput.value;
+            if (!days || !dateStr) {
+                releaseDateInput.value = '';
+                return;
+            }
+            const date = new Date(dateStr);
+            let added = 0;
+            while (added < days) {
+                date.setDate(date.getDate() + 1);
+                if (date.getDay() !== 0 && date.getDay() !== 6) {
+                    added++;
+                }
+            }
+            releaseDateInput.value = date.toISOString().split('T')[0];
+        }
 
-        // Handle form submit and save to database
-        document.getElementById('appointmentForm').addEventListener('submit', function (e) {
-            e.preventDefault();
+        async function loadOffices() {
+            try {
+                const res = await fetch('get_offices.php');
+                if (!res.ok) throw new Error('Failed to load offices');
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                
+                offices = data.offices || [];
+                officeIdMap = {};
+                officeConfigs = {};
+                
+                offices.forEach(office => {
+                    officeIdMap[office.office_name] = office.office_id;
+                    officeConfigs[office.office_id] = {
+                        opening_time: office.opening_time,
+                        closing_time: office.closing_time,
+                        slot_interval_minutes: office.slot_interval_minutes
+                    };
+                });
+                
+                renderOfficeChips();
+                
+                // Set first office as default
+                if (offices.length > 0) {
+                    setOffice(offices[0].office_name);
+                }
+            } catch (err) {
+                console.error('Failed to load offices:', err);
+                officeMenu.innerHTML = '<div style="text-align:center;padding:20px;color:#dc2626;">Failed to load offices. Please refresh the page.</div>';
+            }
+        }
 
-            // Gather details
-            const office = document.getElementById('officeInput').value;
-            const office_id = officeIdMap[office] || 1;
-            const paperType = document.getElementById('paperType').value;
-            const processingDays = document.getElementById('processingDays').value;
-            const releaseDate = document.getElementById('releaseDate').value;
-            const concern = document.getElementById('concernText').value;
-            const time = document.getElementById('timeSelect').value;
-            const date = document.getElementById('appointmentDate').value;
+        function renderOfficeChips() {
+            officeMenu.innerHTML = '';
+            offices.forEach(office => {
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'office-chip';
+                chip.dataset.office = office.office_name;
+                chip.textContent = office.office_name;
+                chip.addEventListener('click', () => setOffice(office.office_name));
+                officeMenu.appendChild(chip);
+            });
+        }
 
-            // Send data to PHP (include last_name, first_name, email)
+        // Initialize on page load
+        loadOffices();
+        paperTypeSelect.addEventListener('change', () => {
+            const days = paperProcessing[paperTypeSelect.value] || '';
+            processingDaysInput.value = days ? `${days} working days` : '';
+            updateReleaseDate();
+        });
+        // When date changes, reload available time slots and update release date
+        appointmentDateInput.addEventListener('change', () => {
+            updateReleaseDate();
+            loadBookedSlots();
+        });
+
+        document.getElementById('appointmentForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const payload = new URLSearchParams({
+                office_id: officeIdInput.value,
+                paperType: paperTypeSelect.value,
+                processingDays: processingDaysInput.value,
+                releaseDate: releaseDateInput.value,
+                concern: concernText.value,
+                appointment_date: appointmentDateInput.value,
+                appointment_time: timeSelect.value
+            });
+
             fetch('save_appointment.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `office_id=${encodeURIComponent(office_id)}&paperType=${encodeURIComponent(paperType)}&processingDays=${encodeURIComponent(processingDays)}&releaseDate=${encodeURIComponent(releaseDate)}&concern=${encodeURIComponent(concern)}&appointment_date=${encodeURIComponent(date)}&appointment_time=${encodeURIComponent(time)}`
+                body: payload.toString()
             })
-                .then(response => response.text())
+                .then(res => res.text())
                 .then(result => {
-                    if (result.trim() === "success") {
-                        // Build details HTML
-                        let details = `<strong>Office:</strong> ${office}<br>`;
-                        if (office === "Registrar Office") {
-                            details += `<strong>Paper Type:</strong> ${paperType}<br>`;
-                            details += `<strong>Processing Days:</strong> ${processingDays ? processingDays + " working days" : ""}<br>`;
-                        }
-                        details += `<strong>Concern:</strong> ${concern}<br>`;
-                        details += `<strong>Date of Request:</strong> ${date}<br>`;
-                        details += `<strong>Time:</strong> ${time}<br>`;
-                        if (office === "Registrar Office") {
-                            details += `<strong>Expected Release Date:</strong> ${releaseDate}<br>`;
-                        }
-
-                        document.getElementById('appointmentDetails').innerHTML = details;
-
-                        // Hide appointment modal, reset form, show success modal
-                        var appointmentModal = bootstrap.Modal.getInstance(document.getElementById('appointmentModal'));
-                        appointmentModal.hide();
-                        this.reset();
-                        document.getElementById('registrarFields').style.display = "none";
-                        document.getElementById('releaseDateField').style.display = "none";
-                        var successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                        successModal.show();
-
-                        // Show "Track Appointment" button
-                        document.getElementById('trackAppointmentBtn').style.display = "block";
-                    } else {
-                        alert("Failed to save appointment. Please try again.");
+                    const trimmed = result.trim();
+                    if (trimmed.startsWith('error:')) {
+                        alert(trimmed.substring(6));
+                        return;
                     }
-                });
+                    if (trimmed === 'duplicate') {
+                        alert('You already have an appointment during that slot. Please choose another time.');
+                        return;
+                    }
+                    if (trimmed === 'success') {
+                        alert('Appointment booked successfully!');
+                        const currentOffice = officeNameInput.value;
+                        event.target.reset();
+                        setOffice(currentOffice || 'Deans Office');
+                    } else {
+                        alert('Failed to book appointment. Please try again.');
+                    }
+                })
+                .catch(() => alert('Failed to book appointment. Please try again.'));
         });
 
-        // Fetch profile info dynamically from PHP
-        fetch('profile_info.php')
+        logoutBtn.addEventListener('click', () => {
+            fetch('logout.php', { method: 'POST' }).finally(() => {
+                window.location.href = 'login.html';
+            });
+        });
+
+        function loadProfile() {
+            fetch('profile_info.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('profileName').textContent = data.first_name;
+                        document.getElementById('profileEmail').textContent = data.email;
+                        
+                        // Load profile picture if available
+                        const profilePicture = document.getElementById('headerProfilePicture');
+                        if (data.profile_picture && data.profile_picture.trim() !== '') {
+                            profilePicture.src = data.profile_picture;
+                            profilePicture.style.display = 'block';
+                        } else {
+                            profilePicture.style.display = 'none';
+                        }
+                    } else {
+                        document.getElementById('profileName').textContent = 'Guest';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('profileName').textContent = 'Guest';
+                });
+        }
+
+        setOffice('Deans Office');
+        loadProfile();
+
+        // AI Chatbot functionality
+        const aiChatbotToggle = document.getElementById('aiChatbotToggle');
+        const aiChatbotPanel = document.getElementById('aiChatbotPanel');
+        const aiChatbotClose = document.getElementById('aiChatbotClose');
+        const aiChatbotMessages = document.getElementById('aiChatbotMessages');
+        const aiChatbotInput = document.getElementById('aiChatbotInput');
+        const aiChatbotSend = document.getElementById('aiChatbotSend');
+
+        let conversationHistory = [];
+
+        if (aiChatbotToggle && aiChatbotPanel) {
+            aiChatbotToggle.addEventListener('click', () => {
+                aiChatbotPanel.classList.toggle('active');
+                if (aiChatbotPanel.classList.contains('active')) {
+                    aiChatbotInput.focus();
+                }
+            });
+
+            aiChatbotClose.addEventListener('click', () => {
+                aiChatbotPanel.classList.remove('active');
+            });
+
+            function addMessage(content, role = 'user') {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `ai-message ai-${role}`;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'ai-message-content';
+                
+                if (role === 'assistant') {
+                    // Parse markdown-like formatting for assistant messages
+                    contentDiv.innerHTML = formatMessage(content);
+                } else {
+                    contentDiv.innerHTML = `<p>${escapeHtml(content)}</p>`;
+                }
+                
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'ai-message-time';
+                timeDiv.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                messageDiv.appendChild(contentDiv);
+                messageDiv.appendChild(timeDiv);
+                aiChatbotMessages.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                aiChatbotMessages.scrollTop = aiChatbotMessages.scrollHeight;
+            }
+
+            function formatMessage(text) {
+                // Simple markdown-like formatting
+                text = escapeHtml(text);
+                // Bold
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                // Lists
+                text = text.replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>');
+                text = text.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+                // Line breaks
+                text = text.replace(/\n/g, '<br>');
+                return `<p>${text}</p>`;
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function showLoading() {
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'ai-message ai-assistant';
+                loadingDiv.id = 'aiLoading';
+                loadingDiv.innerHTML = `
+                    <div class="ai-message-content">
+                        <div class="ai-loading">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                aiChatbotMessages.appendChild(loadingDiv);
+                aiChatbotMessages.scrollTop = aiChatbotMessages.scrollHeight;
+            }
+
+            function removeLoading() {
+                const loading = document.getElementById('aiLoading');
+                if (loading) {
+                    loading.remove();
+                }
+            }
+
+            function sendMessage() {
+                const message = aiChatbotInput.value.trim();
+                if (!message) return;
+
+                // Add user message
+                addMessage(message, 'user');
+                conversationHistory.push({ role: 'user', content: message });
+                
+                // Clear input
+                aiChatbotInput.value = '';
+                aiChatbotSend.disabled = true;
+                
+                // Show loading
+                showLoading();
+
+                // Send to AI
+                fetch('ai_chat.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: message,
+                        history: conversationHistory
+                    })
+                })
+                .then(res => {
+                    // Check if response is OK
+                    if (!res.ok) {
+                        // Try to parse error response
+                        return res.json().then(data => {
+                            throw new Error(data.error || `Server error: ${res.status} ${res.statusText}`);
+                        }).catch(() => {
+                            throw new Error(`Server error: ${res.status} ${res.statusText}`);
+                        });
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    removeLoading();
+                    aiChatbotSend.disabled = false;
+                    
+                    if (data.success) {
+                        addMessage(data.response, 'assistant');
+                        conversationHistory.push({ role: 'assistant', content: data.response });
+                        
+                        // Handle auto-booking success
+                        if (data.source === 'auto_booking' && data.booking) {
+                            // Show success notification
+                            setTimeout(() => {
+                                alert('✅ Appointment booked successfully!\n\n' +
+                                      'Office: ' + (data.booking.office_name || 'Office') + '\n' +
+                                      'Date: ' + data.booking.appointment_date + '\n' +
+                                      'Time: ' + data.booking.appointment_time + '\n\n' +
+                                      'You can track this appointment in your dashboard.');
+                                
+                                // Optionally refresh the page to show updated appointments
+                                // window.location.reload();
+                            }, 500);
+                        }
+                    } else {
+                        // Server returned error response
+                        const errorMsg = data.error || 'Unknown error occurred';
+                        addMessage('Sorry, I encountered an error: ' + errorMsg + '\n\nPlease try again or contact support if the problem persists.', 'assistant');
+                        console.error('AI Chat server error:', data);
+                    }
+                })
+                .catch(err => {
+                    removeLoading();
+                    aiChatbotSend.disabled = false;
+                    
+                    // More specific error messages
+                    let errorMessage = 'Sorry, I couldn\'t connect to the AI service. ';
+                    
+                    if (err.message) {
+                        if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+                            errorMessage += 'This might be a network issue. Please check your internet connection and try again.';
+                        } else if (err.message.includes('500') || err.message.includes('Internal Server Error')) {
+                            errorMessage += 'The server encountered an error. Please try again in a moment.';
+                        } else if (err.message.includes('404')) {
+                            errorMessage += 'The AI service endpoint was not found. Please contact support.';
+                        } else {
+                            errorMessage += err.message;
+                        }
+                    } else {
+                        errorMessage += 'Please try again later or contact support if the problem persists.';
+                    }
+                    
+                    addMessage(errorMessage, 'assistant');
+                    console.error('AI Chat error:', err);
+                    console.error('Error details:', {
+                        message: err.message,
+                        stack: err.stack,
+                        name: err.name
+                    });
+                });
+            }
+
+            if (aiChatbotSend) {
+                aiChatbotSend.addEventListener('click', sendMessage);
+            }
+            if (aiChatbotInput) {
+                aiChatbotInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+        }
+
+        // Messages Widget functionality
+        const messagesToggle = document.getElementById('messagesToggle');
+        const messagesPanel = document.getElementById('messagesPanel');
+        const messagesClose = document.getElementById('messagesClose');
+        const messagesList = document.getElementById('messagesList');
+        const messagesBadge = document.getElementById('messagesBadge');
+        const conversationListView = document.getElementById('conversationListView');
+        const messageThreadView = document.getElementById('messageThreadView');
+        const backToConversations = document.getElementById('backToConversations');
+        const closeThread = document.getElementById('closeThread');
+        const messageThread = document.getElementById('messageThread');
+        const messageThreadInput = document.getElementById('messageThreadInput');
+        const messageThreadSend = document.getElementById('messageThreadSend');
+        const threadHeaderName = document.getElementById('threadHeaderName');
+        const threadHeaderSubtitle = document.getElementById('threadHeaderSubtitle');
+        
+        let messagesPollInterval = null;
+        let unreadCount = 0;
+        let currentConversation = null;
+        let threadPollInterval = null;
+
+        // Function to check for unread messages
+        function checkUnreadMessages() {
+            fetch('get_unread_count.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        unreadCount = data.count || 0;
+                        updateMessagesBadge();
+                    }
+                })
+                .catch(err => {
+                    console.error('Error checking unread messages:', err);
+                });
+        }
+
+        // Function to update badge
+        function updateMessagesBadge() {
+            if (unreadCount > 0) {
+                messagesBadge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                messagesBadge.style.display = 'inline-block';
+            } else {
+                messagesBadge.style.display = 'none';
+            }
+        }
+
+        // Function to load conversations
+        function loadConversations() {
+            messagesList.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Loading conversations...</p></div></div>';
+            
+            fetch('get_conversations.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.conversations) {
+                        if (data.conversations.length === 0) {
+                            messagesList.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>No messages yet. Staff will contact you here if needed.</p></div></div>';
+                            return;
+                        }
+                        
+                        messagesList.innerHTML = '';
+                        data.conversations.forEach(conv => {
+                            const convDiv = document.createElement('div');
+                            convDiv.className = 'conversation-item';
+                            convDiv.innerHTML = `
+                                <div class="conversation-content">
+                                    <div class="conversation-main">
+                                        <strong class="conversation-name">${escapeHtml(conv.other_name || 'Staff')}</strong>
+                                        <p class="conversation-preview">${escapeHtml(conv.last_message || 'No message')}</p>
+                                    </div>
+                                    <div class="conversation-meta">
+                                        ${conv.unread_count > 0 ? `<span class="conversation-badge">${conv.unread_count}</span>` : ''}
+                                        <span class="conversation-time">${formatTime(conv.last_message_time)}</span>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            convDiv.addEventListener('click', () => {
+                                openConversation(conv.other_id, conv.other_type, conv.other_name);
+                            });
+                            
+                            messagesList.appendChild(convDiv);
+                        });
+                    } else {
+                        messagesList.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Error loading conversations. Please try again.</p></div></div>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading conversations:', err);
+                    messagesList.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Error loading conversations. Please try again.</p></div></div>';
+                });
+        }
+
+        // Function to open conversation thread
+        function openConversation(otherId, otherType, otherName) {
+            // Since this is proto2.html (user booking page), other_type should always be 'staff'
+            // Validate and correct if needed to prevent errors
+            if (!otherType || otherType !== 'staff') {
+                console.warn('Invalid other_type detected:', otherType, '- correcting to staff');
+                otherType = 'staff';
+            }
+            
+            currentConversation = { 
+                otherId: parseInt(otherId), 
+                otherType: 'staff', // Always staff for users
+                otherName 
+            };
+            threadHeaderName.textContent = otherName || 'Staff';
+            threadHeaderSubtitle.textContent = 'Conversation';
+            
+            // Switch views
+            conversationListView.style.display = 'none';
+            messageThreadView.style.display = 'flex';
+            
+            loadMessageThread();
+            startThreadPolling();
+        }
+
+        // Function to load message thread
+        function loadMessageThread() {
+            if (!currentConversation) return;
+            
+            messageThread.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Loading messages...</p></div></div>';
+            
+            fetch(`get_messages.php?other_type=${encodeURIComponent(currentConversation.otherType)}&other_id=${encodeURIComponent(currentConversation.otherId)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.messages) {
+                        if (data.messages.length === 0) {
+                            messageThread.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>No messages yet. Start the conversation!</p></div></div>';
+                            return;
+                        }
+                        
+                        messageThread.innerHTML = '';
+                        data.messages.forEach(msg => {
+                            const isUser = msg.sender_type === 'user';
+                            const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const date = new Date(msg.created_at).toLocaleDateString();
+                            
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = `ai-message ${isUser ? 'ai-user' : 'ai-assistant'}`;
+                            messageDiv.innerHTML = `
+                                <div class="ai-message-content">
+                                    <p>${escapeHtml(msg.message)}</p>
+                                </div>
+                                <div class="ai-message-time">${time} • ${date}</div>
+                            `;
+                            messageThread.appendChild(messageDiv);
+                        });
+                        
+                        messageThread.scrollTop = messageThread.scrollHeight;
+                        checkUnreadMessages(); // Refresh badge
+                    } else {
+                        messageThread.innerHTML = `<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Error: ${data.error || 'Failed to load messages'}</p></div></div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading messages:', err);
+                    messageThread.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Error loading messages. Please try again.</p></div></div>';
+                });
+        }
+
+        // Function to send message
+        function sendThreadMessage() {
+            if (!currentConversation || !messageThreadInput.value.trim()) return;
+            
+            const message = messageThreadInput.value.trim();
+            messageThreadInput.value = '';
+            messageThreadSend.disabled = true;
+            
+            fetch('send_message.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sender_type: 'user',
+                    recipient_type: currentConversation.otherType,
+                    recipient_id: currentConversation.otherId,
+                    message: message
+                })
+            })
             .then(res => res.json())
             .then(data => {
+                messageThreadSend.disabled = false;
                 if (data.success) {
-                    document.getElementById('profileName').textContent = data.first_name;
-                    document.getElementById('profileEmail').textContent = data.email;
-                    document.getElementById('greeting').innerHTML = `Hello, <span id="profileName">${data.first_name}</span>!`;
+                    loadMessageThread();
+                    loadConversations(); // Refresh conversation list
                 } else {
-                    document.getElementById('profileName').textContent = "Guest";
-                    document.getElementById('profileEmail').textContent = "";
-                    document.getElementById('greeting').textContent = "Hello, Guest!";
+                    alert('Failed to send message: ' + (data.error || 'Unknown error'));
                 }
             })
             .catch(err => {
-                document.getElementById('profileName').textContent = "Guest";
-                document.getElementById('profileEmail').textContent = "";
-                document.getElementById('greeting').textContent = "Hello, Guest!";
-                console.error('Profile fetch error:', err);
+                console.error('Error sending message:', err);
+                messageThreadSend.disabled = false;
+                alert('Failed to send message. Please try again.');
             });
-
-        function signOut() {
-            window.location.href = 'login.html';
         }
 
-        // Connect Track My Appointments button to client_dashboard.html
-        document.getElementById('trackAppointmentBtn').addEventListener('click', function () {
-            window.location.href = 'client_dashboard.html';
-        });
-    </script>
-    <!-- ...your other scripts... -->
-</body>
+        // Function to start polling for new messages in thread
+        function startThreadPolling() {
+            if (threadPollInterval) clearInterval(threadPollInterval);
+            threadPollInterval = setInterval(() => {
+                if (currentConversation && messageThreadView.style.display !== 'none') {
+                    loadMessageThread();
+                }
+            }, 5000);
+        }
 
+        // Function to stop thread polling
+        function stopThreadPolling() {
+            if (threadPollInterval) {
+                clearInterval(threadPollInterval);
+                threadPollInterval = null;
+            }
+        }
+
+        // Function to go back to conversation list
+        function backToConversationList() {
+            currentConversation = null;
+            stopThreadPolling();
+            conversationListView.style.display = 'flex';
+            messageThreadView.style.display = 'none';
+            loadConversations();
+        }
+
+        // Function to format time
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Event listeners
+        if (messagesToggle && messagesPanel) {
+            messagesToggle.addEventListener('click', () => {
+                messagesPanel.classList.toggle('active');
+                if (messagesPanel.classList.contains('active')) {
+                    backToConversationList();
+                }
+            });
+
+            messagesClose.addEventListener('click', () => {
+                messagesPanel.classList.remove('active');
+                stopThreadPolling();
+            });
+        }
+
+        if (backToConversations) {
+            backToConversations.addEventListener('click', backToConversationList);
+        }
+
+        if (closeThread) {
+            closeThread.addEventListener('click', () => {
+                messagesPanel.classList.remove('active');
+                stopThreadPolling();
+            });
+        }
+
+        if (messageThreadSend) {
+            messageThreadSend.addEventListener('click', sendThreadMessage);
+        }
+
+        if (messageThreadInput) {
+            messageThreadInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendThreadMessage();
+                }
+            });
+        }
+
+        // Poll for unread messages every 30 seconds
+        checkUnreadMessages();
+        setInterval(checkUnreadMessages, 30000);
+    </script>
+</body>
 </html>

@@ -1,438 +1,432 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <title>My Appointments</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            background: #e9effd;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        h1 {
-            text-align: center;
-            color: #2563eb;
-            font-size: 2.2rem;
-            margin-top: 24px;
-            margin-bottom: 18px;
-            font-weight: 700;
-        }
-
-        .appointments-container {
-            background: #fff;
-            max-width: 1500px;
-            margin: 32px auto 0 auto;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.12);
-            padding: 32px 28px 24px 28px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 18px;
-        }
-
-        th,
-        td {
-            padding: 10px 12px;
-            text-align: left;
-            font-size: 1rem;
-            white-space: nowrap;
-        }
-
-        th {
-            background: #2563eb;
-            color: #fff;
-            font-weight: 600;
-        }
-
-        tr:not(:last-child) td {
-            border-bottom: 1px solid #e3e8f0;
-        }
-
-        .badge-completed {
-            background: #2563eb;
-            color: #fff;
-            border-radius: 6px;
-            padding: 3px 12px;
-            font-size: 0.95em;
-            font-weight: 600;
-            margin-right: 6px;
-        }
-
-        .badge-pending {
-            background: #facc15;
-            color: #212529;
-            border-radius: 6px;
-            padding: 3px 12px;
-            font-size: 0.95em;
-            font-weight: 600;
-            margin-right: 6px;
-        }
-
-        .action-link {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 500;
-            margin-right: 10px;
-            cursor: pointer;
-        }
-
-        .action-link:hover {
-            text-decoration: underline;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 28px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 0 auto;
-            display: block;
-            margin-top: 18px;
-            transition: background 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-
-        @media (max-width: 900px) {
-            .appointments-container {
-                padding: 12px 2vw 18px 2vw;
-            }
-
-            th,
-            td {
-                font-size: 0.95rem;
-                padding: 7px 6px;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .appointments-container {
-                padding: 4px 0 10px 0;
-            }
-
-            table,
-            thead,
-            tbody,
-            th,
-            td,
-            tr {
-                display: block;
-            }
-
-            th {
-                position: sticky;
-                top: 0;
-                z-index: 2;
-            }
-
-            tr {
-                margin-bottom: 18px;
-            }
-
-            td {
-                border: none;
-                position: relative;
-                padding-left: 50%;
-                min-height: 32px;
-            }
-
-            td:before {
-                position: absolute;
-                left: 12px;
-                top: 10px;
-                width: 45%;
-                white-space: nowrap;
-                font-weight: 600;
-                color: #2563eb;
-            }
-
-            td:nth-child(1):before {
-                content: "Office";
-            }
-
-            td:nth-child(2):before {
-                content: "Name";
-            }
-
-            td:nth-child(3):before {
-                content: "User ID";
-            }
-
-            td:nth-child(4):before {
-                content: "Email";
-            }
-
-            td:nth-child(5):before {
-                content: "Concern";
-            }
-
-            td:nth-child(6):before {
-                content: "Date Requested";
-            }
-
-            td:nth-child(7):before {
-                content: "Time";
-            }
-
-            td:nth-child(8):before {
-                content: "Status";
-            }
-        }
-
-        /* Feedback Modal Styles */
-        #feedbackModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #feedbackModal .modal-content {
-            background: #fff;
-            padding: 24px;
-            border-radius: 8px;
-            width: 320px;
-            max-width: 90vw;
-            margin: auto;
-        }
-
-        #feedbackModal h3 {
-            margin-top: 0;
-        }
-
-        #feedbackModal #ratingRow {
-            font-size: 2em;
-            text-align: center;
-        }
-
-        #feedbackModal .rate {
-            cursor: pointer;
-            display: inline-block;
-            margin: 0 5px;
-        }
-
-        #feedbackModal textarea {
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        #feedbackModal button {
-            margin-top: 10px;
-        }
-    </style>
+	<meta charset="UTF-8">
+	<title>Track Appointments • CJC School Frontline Services</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/dashboard.css">
 </head>
-
 <body>
-    <h1>My Appointments</h1>
-    <div class="appointments-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Office</th>
-                    <th>Name</th>
-                    <th>User ID</th>
-                    <th>Email</th>
-                    <th>Concern</th>
-                    <th>Date Requested</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="appointmentsTable">
-                <tr>
-                    <td colspan="8" style="text-align:center;color:#888;">Loading...</td>
-                </tr>
-            </tbody>
-        </table>
-        <button class="btn-primary" onclick="bookAppointment()">Book New Appointment</button>
-    </div>
+	<div class="dashboard-layout">
+		<aside class="sidebar">
+			<img src="img/cjclogo.png" alt="CJC Logo" class="logo">
+			<nav>
+				<a href="proto2.html">Book Appointment</a>
+				<a href="client_dashboard.html" class="active">Track Appointments</a>
+				<a href="profile.html">My Profile</a>
+			</nav>
+			<button id="logoutBtn" class="logout-btn" style="margin-top:32px;">Sign Out</button>
+		</aside>
 
-    <!-- Feedback Popup -->
-    <div id="feedbackModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:9999; align-items:center; justify-content:center;">
-      <div style="background:#fff; padding:24px; border-radius:8px; width:320px; max-width:90vw; margin:auto;">
-        <h3>Help us improve!</h3>
-        <p>How easy was it for you to complete your appointment?</p>
-        <div id="ratingRow" style="font-size:2em; text-align:center;">
-          <span class="rate" data-rate="1">&#128577;</span>
-          <span class="rate" data-rate="2">&#128542;</span>
-          <span class="rate" data-rate="3">&#128528;</span>
-          <span class="rate" data-rate="4">&#128522;</span>
-          <span class="rate" data-rate="5">&#128525;</span>
-        </div>
-        <textarea id="feedbackComment" placeholder="How can we improve?" style="width:100%;margin-top:10px;"></textarea>
-        <button id="submitFeedback" style="margin-top:10px;" class="btn btn-primary btn-block">Submit feedback</button>
-        <button id="closeFeedback" style="margin-top:10px;" class="btn btn-secondary btn-block">Cancel</button>
-      </div>
-    </div>
+		<main class="dashboard-main">
+			<header class="dashboard-header">
+				<h1>TRACK APPOINTMENTS</h1>
+				<div class="welcome-block">
+					<img id="headerProfilePicture" src="" alt="Profile" class="header-profile-picture" style="display:none;">
+					<div id="welcomeText">Welcome back</div>
+				</div>
+			</header>
 
-    <script>
-        function fetchAppointments() {
-            let table = document.getElementById('appointmentsTable');
-            table.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#888;">Loading...</td></tr>`;
+			<section class="appointments-wrapper" id="appointmentsSection">
+				<div class="content-panel">
+					<div class="filter-panel">
+						<label for="statusFilter" style="font-weight:600;">Filter by status:</label>
+						<select id="statusFilter">
+							<option value="all">All</option>
+							<option value="pending">Pending</option>
+							<option value="approved">Approved</option>
+							<option value="declined">Declined</option>
+							<option value="completed">Completed</option>
+						</select>
+					</div>
 
-            fetch('get_client_dashboard.php')
-                .then(res => res.json())
-                .then(data => {
-                    console.log(data); // Check browser console for output
-                    renderAppointments(data);
-                });
-        }
+					<div id="appointmentsList" class="appointment-cards">
+						<div class="loading-state">Loading appointments...</div>
+					</div>
 
-        function renderAppointments(appointments) {
-            let table = document.getElementById('appointmentsTable');
-            if (!appointments.length) {
-                table.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#888;">No appointments found.</td></tr>`;
-                return;
-            }
-            let html = "";
-            appointments.sort((a, b) => {
-                // Sort by date then time
-                if (a.appointment_date === b.appointment_date) {
-                    return a.appointment_time.localeCompare(b.appointment_time);
-                }
-                return b.appointment_date.localeCompare(a.appointment_date);
-            });
-            appointments.forEach(app => {
-                html += `<tr>
-    <td>${app.office || '-'}</td>
-    <td>${(app.first_name || '') + ' ' + (app.last_name || '')}</td>
-    <td>${app.user_id || '-'}</td>
-    <td>${app.email || '-'}</td>
-    <td>${app.concern || '-'}</td>
-    <td>${app.appointment_date || '-'}</td>
-    <td>${app.appointment_time || '-'}</td>
-    <td>
-        ${app.status === "Completed"
-                    ? '<span class="badge-completed">Completed</span>'
-                    : `<span class="badge-pending">${app.status}</span>`
-                }
-        ${app.status === "Completed"
-                    ? `<span class="action-link" onclick="giveFeedback(${app.appointment_id})">Give Feedback</span>`
-                    : `<button class="btn btn-primary btn-sm complete-btn" data-appointment="${app.appointment_id}">Complete</button>`
-                }
-    </td>
-</tr>`;
-    });
-    table.innerHTML = html;
-}
+					<button class="cta-button" id="bookBtn">Book New Appointment</button>
+				</div>
+			</section>
+		</main>
+	</div>
 
-        function trackAppointment(id) {
-            alert("Tracking appointment ID: " + id);
-            // window.location.href = 'track_appointment.php?id=' + id;
-        }
-        function giveFeedback(id) {
-            // Open feedback modal
-            document.getElementById('feedbackModal').style.display = 'flex';
-        }
-        function bookAppointment() {
-            window.location.href = 'proto2.html';
-        }
+	<!-- Chat Modal -->
+	<div id="chatModal" class="message-overlay">
+		<div class="message-panel">
+			<div class="message-header">
+				<div>
+					<p id="chatModalTitle">Message</p>
+					<h2 id="chatModalName">Staff</h2>
+				</div>
+				<button class="message-close" id="closeChatModal">&times;</button>
+			</div>
+			<div class="message-body" id="chatModalMessages">
+				<div class="message-empty">Loading messages...</div>
+			</div>
+			<div class="message-form">
+				<textarea id="chatModalInput" placeholder="Type your message..." rows="3"></textarea>
+				<div class="message-actions">
+					<span class="message-hint">Press Enter to send, Shift+Enter for new line</span>
+					<button class="message-send" id="chatModalSendBtn">Send</button>
+				</div>
+			</div>
+		</div>
+	</div>
 
-        // Feedback submission
-        document.getElementById('submitFeedback').addEventListener('click', function() {
-            let rating = document.querySelector('input[name="rating"]:checked');
-            let feedback = document.getElementById('feedbackComment').value;
-            if (!rating) {
-                alert("Please select a rating.");
-                return;
-            }
-            rating = rating.value;
+	<script>
+		const welcomeText = document.getElementById('welcomeText');
+		const logoutBtn = document.getElementById('logoutBtn');
+		const statusFilter = document.getElementById('statusFilter');
+		const appointmentsList = document.getElementById('appointmentsList');
+		let allAppointments = [];
 
-            // Submit feedback via AJAX or fetch
-            fetch('submit_feedback.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ rating, feedback })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message);
-                    document.getElementById('feedbackModal').style.display = 'none';
-                })
-                .catch(err => console.error(err));
-        });
+		document.getElementById('bookBtn').addEventListener('click', () => {
+			window.location.href = 'proto2.html';
+		});
 
-        document.getElementById('closeFeedback').addEventListener('click', function() {
-            document.getElementById('feedbackModal').style.display = 'none';
-        });
+		logoutBtn.addEventListener('click', () => {
+			fetch('logout.php', { method: 'POST' }).finally(() => {
+				window.location.href = 'login.html';
+			});
+		});
 
-        // Initial load
-        fetchAppointments();
+		function loadProfile() {
+			fetch('profile_info.php')
+				.then(res => res.json())
+				.then(data => {
+					if (data.success && data.first_name) {
+						welcomeText.textContent = `Welcome, ${data.first_name}`;
+						
+						// Load profile picture if available
+						const profilePicture = document.getElementById('headerProfilePicture');
+						if (data.profile_picture && data.profile_picture.trim() !== '') {
+							profilePicture.src = data.profile_picture;
+							profilePicture.style.display = 'block';
+						} else {
+							profilePicture.style.display = 'none';
+						}
+					}
+				})
+				.catch(() => {
+					welcomeText.textContent = 'Welcome back';
+				});
+		}
 
-        // Your script here
-        let selectedAppointmentId = null;
-        let selectedRating = 0;
+		function fetchAppointments() {
+			appointmentsList.innerHTML = '<div class="loading-state">Loading appointments...</div>';
+			fetch('get_client_dashboard.php')
+				.then(res => {
+					if (!res.ok) throw new Error('Network response was not ok');
+					return res.json();
+				})
+				.then(data => {
+					if (data.error) throw new Error(data.error);
+					if (!Array.isArray(data)) throw new Error('Invalid data format');
+					allAppointments = data.sort((a, b) => {
+						const dateCompare = String(b.appointment_date).localeCompare(String(a.appointment_date));
+						return dateCompare !== 0 ? dateCompare : String(a.appointment_time).localeCompare(String(b.appointment_time));
+					});
+					renderAppointments();
+				})
+				.catch(error => {
+					appointmentsList.innerHTML = `<div class="empty-state">Error loading appointments: ${error.message}</div>`;
+				});
+		}
 
-        // Show popup when Complete is clicked
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('complete-btn')) {
-                selectedAppointmentId = e.target.getAttribute('data-appointment');
-                document.getElementById('feedbackModal').style.display = 'flex';
-            }
-            if (e.target.id === 'closeFeedback') {
-                document.getElementById('feedbackModal').style.display = 'none';
-                selectedRating = 0;
-                document.querySelectorAll('.rate').forEach(r => r.style.opacity = 1);
-                document.getElementById('feedbackComment').value = '';
-            }
-        });
+		function normalizeStatus(status) {
+			const value = (status || 'pending').toString().toLowerCase();
+			if (value === 'accepted') return 'approved';
+			return value;
+		}
 
-        // Handle rating selection
-        document.querySelectorAll('.rate').forEach(function(el) {
-            el.addEventListener('click', function() {
-                selectedRating = this.getAttribute('data-rate');
-                document.querySelectorAll('.rate').forEach(r => r.style.opacity = 0.5);
-                this.style.opacity = 1; 
-            });
-        });
+		function renderAppointments() {
+			const filter = statusFilter.value;
+			const filtered = filter === 'all'
+				? allAppointments
+				: allAppointments.filter(apt => normalizeStatus(apt.status) === filter);
 
-        // Submit feedback
-        document.getElementById('submitFeedback').addEventListener('click', function() {
-            const comment = document.getElementById('feedbackComment').value;
-            if (!selectedRating) {
-                alert('Please select a rating.');
-                return;
-            }
-            fetch('submit_feedback.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `appointment_id=${encodeURIComponent(selectedAppointmentId)}&rating=${encodeURIComponent(selectedRating)}&comment=${encodeURIComponent(comment)}`
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Thank you for your feedback!');
-                    document.getElementById('feedbackModal').style.display = 'none';
-                    selectedRating = 0;
-                    document.querySelectorAll('.rate').forEach(r => r.style.opacity = 1);
-                    document.getElementById('feedbackComment').value = '';
-                } else {
-                    alert('Failed to submit feedback.');
-                }
-            });
-        });
-    </script>
+			if (!filtered.length) {
+				appointmentsList.innerHTML = `
+					<div class="empty-state">
+						<h2>No appointments found</h2>
+						<p>${filter === 'all' ? 'You have not booked any appointments yet.' : 'No appointments with this status.'}</p>
+					</div>
+				`;
+				return;
+			}
+
+			appointmentsList.innerHTML = filtered.map(appointment => {
+				const status = normalizeStatus(appointment.status);
+				const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+				const hasFeedback = appointment.has_feedback && appointment.rating;
+				const feedbackStars = hasFeedback ? '⭐'.repeat(appointment.rating) + '☆'.repeat(5 - appointment.rating) : '';
+				
+				return `
+					<article class="appointment-card">
+						<div class="card-row">
+							<div class="office-label">${appointment.office || 'N/A'}</div>
+							<span class="status-pill status-${status}">${statusText}</span>
+						</div>
+						<div class="card-grid">
+							<div class="card-detail">
+								<span>Concern</span>
+								<span>${appointment.concern || '—'}</span>
+							</div>
+							<div class="card-detail">
+								<span>Date Requested</span>
+								<span>${formatDate(appointment.appointment_date)}</span>
+							</div>
+							<div class="card-detail">
+								<span>Time</span>
+								<span>${appointment.appointment_time || '—'}</span>
+							</div>
+							<div class="card-detail">
+								<span>Email</span>
+								<span>${appointment.email || '—'}</span>
+							</div>
+						</div>
+						${hasFeedback ? `
+							<div class="feedback-display" style="margin-top:16px;padding:16px;background:#f9fafb;border-radius:12px;border-left:4px solid var(--primary);">
+								<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+									<strong style="color:var(--primary);font-size:0.9rem;">Your Feedback</strong>
+									<span style="font-size:1.2rem;letter-spacing:2px;">${feedbackStars}</span>
+								</div>
+								<p style="color:#6b7280;font-size:0.9rem;margin:0;line-height:1.5;">${appointment.feedback_comment || '—'}</p>
+							</div>
+						` : ''}
+						<div class="card-actions">
+							${appointment.appointment_id
+								? `<button class="btn-message message-btn" data-appointment-id="${appointment.appointment_id}" data-office="${(appointment.office || '').replace(/"/g, '&quot;')}" title="Message Staff" onclick="openChatModalFromButton(this)">💬 Message</button>`
+								: ''
+							}
+							${status === 'completed' && appointment.appointment_id
+								? `<button class="btn-feedback feedback-btn" data-id="${appointment.appointment_id}">${hasFeedback ? 'Edit Feedback' : 'Give Feedback'}</button>`
+								: ''
+							}
+						</div>
+					</article>
+				`;
+			}).join('');
+		}
+
+		function formatDate(value) {
+			if (!value) return '—';
+			const date = new Date(value);
+			return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+		}
+
+		statusFilter.addEventListener('change', renderAppointments);
+
+		appointmentsList.addEventListener('click', (event) => {
+			// Handle feedback button clicks
+			if (event.target.classList.contains('feedback-btn')) {
+				const id = event.target.getAttribute('data-id');
+				if (id && id !== 'null' && id !== 'undefined' && !isNaN(id)) {
+					window.location.href = `submit_feedback.php?appointment_id=${encodeURIComponent(id)}`;
+				} else {
+					alert('Invalid appointment ID. Please try again.');
+					console.error('Invalid appointment_id:', id);
+				}
+				return;
+			}
+			
+			// Handle message button clicks - check both the button and its parent
+			const messageBtn = event.target.closest('.message-btn') || 
+			                  (event.target.classList.contains('message-btn') ? event.target : null);
+			if (messageBtn) {
+				const appointmentId = messageBtn.getAttribute('data-appointment-id');
+				const officeName = messageBtn.getAttribute('data-office');
+				if (appointmentId) {
+					openChatModal(appointmentId, officeName);
+				} else {
+					console.error('Missing appointment ID on message button');
+				}
+				return;
+			}
+		});
+
+		// Chat Modal functionality
+		const chatModal = document.getElementById('chatModal');
+		const closeChatModal = document.getElementById('closeChatModal');
+		const chatModalMessages = document.getElementById('chatModalMessages');
+		const chatModalInput = document.getElementById('chatModalInput');
+		const chatModalSendBtn = document.getElementById('chatModalSendBtn');
+		const chatModalName = document.getElementById('chatModalName');
+		const chatModalTitle = document.getElementById('chatModalTitle');
+
+		let currentChatStaffId = null;
+		let currentChatAppointmentId = null;
+		let chatPollInterval = null;
+
+		closeChatModal.addEventListener('click', () => {
+			chatModal.classList.remove('active');
+			if (chatPollInterval) {
+				clearInterval(chatPollInterval);
+				chatPollInterval = null;
+			}
+		});
+
+		chatModal.addEventListener('click', (e) => {
+			if (e.target === chatModal) {
+				chatModal.classList.remove('active');
+				if (chatPollInterval) {
+					clearInterval(chatPollInterval);
+					chatPollInterval = null;
+				}
+			}
+		});
+
+		function openChatModal(appointmentId, officeName) {
+			console.log('openChatModal called with:', appointmentId, officeName);
+			if (!appointmentId) {
+				console.error('No appointment ID provided');
+				alert('Error: Missing appointment ID');
+				return;
+			}
+			currentChatAppointmentId = appointmentId;
+			chatModalTitle.textContent = 'Message Staff';
+			chatModalName.textContent = officeName || 'Staff';
+			chatModalMessages.innerHTML = '<div class="message-empty">Loading...</div>';
+			chatModalInput.value = '';
+			// Remove any inline display:none and add active class for CSS visibility
+			chatModal.style.display = '';
+			chatModal.classList.add('active');
+			console.log('Modal opened - active class added');
+
+			// Get staff ID for this appointment
+			fetch(`get_appointment_staff.php?appointment_id=${appointmentId}`)
+				.then(res => res.json())
+				.then(data => {
+					if (data.success) {
+						currentChatStaffId = data.staff_id;
+						chatModalName.textContent = data.staff_email || officeName || 'Staff';
+						loadChatMessages();
+						startChatPolling();
+					} else {
+						chatModalMessages.innerHTML = `<div class="message-empty" style="color:#dc2626;">${data.error || 'Error loading staff information'}</div>`;
+					}
+				})
+				.catch(err => {
+					console.error('Error fetching staff:', err);
+					chatModalMessages.innerHTML = '<div class="message-empty" style="color:#dc2626;">Error loading staff information</div>';
+				});
+		}
+
+		// Helper function for onclick handler - must be defined after openChatModal
+		window.openChatModalFromButton = function(button) {
+			console.log('openChatModalFromButton called');
+			const appointmentId = button.getAttribute('data-appointment-id');
+			const officeName = button.getAttribute('data-office');
+			console.log('Button data:', { appointmentId, officeName });
+			if (appointmentId) {
+				openChatModal(appointmentId, officeName);
+			} else {
+				console.error('Missing appointment ID');
+				alert('Error: Could not find appointment ID');
+			}
+		};
+
+		function loadChatMessages() {
+			if (!currentChatStaffId) {
+				console.log('No staff ID, skipping loadChatMessages');
+				return;
+			}
+			
+			console.log('Loading messages for staff ID:', currentChatStaffId);
+			fetch(`get_messages.php?other_type=staff&other_id=${currentChatStaffId}`)
+				.then(res => {
+					console.log('Response status:', res.status);
+					if (!res.ok) {
+						return res.text().then(text => {
+							console.error('Error response:', text);
+							throw new Error(`HTTP ${res.status}: ${text}`);
+						});
+					}
+					return res.json();
+				})
+				.then(data => {
+					console.log('Messages data:', data);
+					if (data.success && data.messages) {
+						if (data.messages.length === 0) {
+							chatModalMessages.innerHTML = '<div class="message-empty">No messages yet. Start the conversation!</div>';
+							return;
+						}
+						chatModalMessages.innerHTML = data.messages.map(msg => {
+							const isUser = msg.sender_type === 'user';
+							const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+							return `
+								<div class="message-bubble ${isUser ? 'user-message' : 'staff-message'}">
+									<div class="message-meta">
+										<span>${msg.sender_name || (isUser ? 'You' : 'Staff')}</span>
+										<span>${time}</span>
+									</div>
+									<p>${msg.message}</p>
+								</div>
+							`;
+						}).join('');
+						chatModalMessages.scrollTop = chatModalMessages.scrollHeight;
+					} else if (data.error) {
+						console.error('Error from server:', data.error);
+						chatModalMessages.innerHTML = `<div class="message-empty" style="color:#dc2626;">Error: ${data.error}</div>`;
+					}
+				})
+				.catch(err => {
+					console.error('Error loading messages:', err);
+					chatModalMessages.innerHTML = '<div class="message-empty" style="color:#dc2626;">Error loading messages. Check console for details.</div>';
+				});
+		}
+
+		chatModalSendBtn.addEventListener('click', sendChatMessage);
+		chatModalInput.addEventListener('keypress', (e) => {
+			if (e.key === 'Enter' && !e.shiftKey) {
+				e.preventDefault();
+				sendChatMessage();
+			}
+		});
+
+		function sendChatMessage() {
+			const message = chatModalInput.value.trim();
+			if (!message || !currentChatStaffId) return;
+
+			chatModalSendBtn.disabled = true;
+			fetch('send_message.php', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					sender_type: 'user',
+					recipient_type: 'staff',
+					recipient_id: currentChatStaffId,
+					message: message
+				})
+			})
+			.then(res => res.json())
+			.then(data => {
+				if (data.success) {
+					chatModalInput.value = '';
+					loadChatMessages();
+				} else {
+					alert('Error sending message: ' + (data.error || 'Unknown error'));
+				}
+			})
+			.catch(err => {
+				alert('Error sending message');
+			})
+			.finally(() => {
+				chatModalSendBtn.disabled = false;
+			});
+		}
+
+		function startChatPolling() {
+			if (chatPollInterval) clearInterval(chatPollInterval);
+			chatPollInterval = setInterval(() => {
+				if (currentChatStaffId) {
+					loadChatMessages();
+				}
+			}, 3000);
+		}
+
+		loadProfile();
+		fetchAppointments();
+	</script>
 </body>
-
 </html>

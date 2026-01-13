@@ -3,11 +3,12 @@
 ## ✅ Completed
 
 1. **.env file created** with your Supabase credentials:
-   - Host: `db.ndnoevxzgczvyghaktxn.supabase.co`
+   - Host: `aws-1-ap-southeast-1.pooler.supabase.com`
    - Port: `5432`
    - Database: `postgres`
-   - User: `postgres`
+   - User: `postgres.ndnoevxzgczvyghaktxn`
    - Password: ✅ Configured
+   - Connection Type: Session Pooler (IPv4 compatible)
 
 2. **Database connection code** - Already configured in `config/db.php`
 3. **Schema file** - Updated in `supabase/schema.sql`

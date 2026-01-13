@@ -17,28 +17,9 @@ if ($stmt->fetch() && password_verify($password, $hashed)) {
     $_SESSION['staff_id'] = $staff_id;
     $_SESSION['office_id'] = $office_id;
     $_SESSION['office_name'] = $db_office_name;
+    $_SESSION['staff_email'] = $email;
 
-    // Redirect based on office_name
-    switch (strtolower($db_office_name)) {
-        case "registrar":
-            header("Location: /sfs/registrar_dashboard.html");
-            break;
-        case "cashier":
-            header("Location: /sfs/cashier_dashboard.html");
-            break;
-        case "ccis office":
-            header("Location: /sfs/ccisoffice_dashboard.html");
-            break;
-        case "dean of ccis":
-            header("Location: /sfs/deanofccis_dashboard.html");
-            break;
-        case "guidance":
-            header("Location: /sfs/guidance_dashboard.html");
-            break;
-        case "assessment":
-            header("Location: /sfs/assessment_dashboard.html");
-            break;
-    }
+    header("Location: staff_dashboard.php");
     exit;
 } else {
     // Invalid login

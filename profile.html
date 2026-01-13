@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>My Profile • CJC School Frontline Services</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/dashboard.css">
+	<style>
+		.profile-form {
+			background: #fff;
+			border-radius: 20px;
+			padding: 32px;
+			box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+			max-width: 800px;
+			margin: 0 auto;
+		}
+		.profile-picture-section {
+			display: flex;
+			align-items: center;
+			gap: 24px;
+			margin-bottom: 32px;
+			padding-bottom: 32px;
+			border-bottom: 1px solid #e5e7eb;
+		}
+		.profile-picture-preview {
+			width: 120px;
+			height: 120px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 3px solid var(--primary, #7d0000);
+			background: #f3f4f6;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: #9ca3af;
+			font-size: 2rem;
+		}
+		.profile-picture-upload {
+			flex: 1;
+		}
+		.profile-picture-upload label {
+			display: inline-block;
+			padding: 10px 20px;
+			background: var(--primary, #7d0000);
+			color: #fff;
+			border-radius: 8px;
+			cursor: pointer;
+			font-weight: 600;
+			transition: background 0.2s;
+		}
+		.profile-picture-upload label:hover {
+			background: #5a0000;
+		}
+		.profile-picture-upload input[type="file"] {
+			display: none;
+		}
+		.profile-picture-upload .file-info {
+			margin-top: 8px;
+			font-size: 0.85rem;
+			color: #6b7280;
+		}
+		.btn-remove-picture {
+			margin-top: 8px;
+			padding: 8px 16px;
+			background: #ef4444;
+			color: #fff;
+			border: none;
+			border-radius: 8px;
+			cursor: pointer;
+			font-size: 0.9rem;
+			font-weight: 600;
+		}
+		.btn-remove-picture:hover {
+			background: #dc2626;
+		}
+		.form-group {
+			margin-bottom: 24px;
+		}
+		.form-group label {
+			display: block;
+			font-weight: 600;
+			color: var(--muted, #6b7280);
+			margin-bottom: 8px;
+			font-size: 0.9rem;
+		}
+		.form-group input,
+		.form-group select {
+			width: 100%;
+			padding: 12px 16px;
+			border: 1px solid #e5e7eb;
+			border-radius: 12px;
+			font-size: 1rem;
+			font-family: inherit;
+			background: #f9fafb;
+		}
+		.form-group input:focus,
+		.form-group select:focus {
+			outline: none;
+			border-color: var(--primary, #7d0000);
+			background: #fff;
+			box-shadow: 0 0 0 3px rgba(125, 0, 0, 0.1);
+		}
+		.form-row {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 16px;
+		}
+		.form-row-3 {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 16px;
+		}
+		.btn-save {
+			background: var(--primary, #7d0000);
+			color: #fff;
+			border: none;
+			border-radius: 999px;
+			padding: 14px 32px;
+			font-size: 1rem;
+			font-weight: 600;
+			cursor: pointer;
+			box-shadow: 0 20px 35px rgba(125, 0, 0, 0.3);
+		}
+		.btn-save:hover {
+			background: #5a0000;
+		}
+		.alert {
+			padding: 16px;
+			border-radius: 12px;
+			margin-bottom: 24px;
+		}
+		.alert-success {
+			background: #d1fae5;
+			color: #065f46;
+		}
+		.alert-error {
+			background: #fee2e2;
+			color: #b91c1c;
+		}
+		@media (max-width: 768px) {
+			.form-row,
+			.form-row-3 {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="dashboard-layout">
+		<aside class="sidebar">
+			<img src="img/cjclogo.png" alt="CJC Logo" class="logo">
+			<nav>
+				<a href="proto2.html">Book Appointment</a>
+				<a href="client_dashboard.html">Track Appointments</a>
+				<a href="profile.html" class="active">My Profile</a>
+			</nav>
+			<button id="logoutBtn" class="logout-btn" style="margin-top:32px;">Sign Out</button>
+		</aside>
+
+		<main class="dashboard-main">
+			<header class="dashboard-header">
+				<h1>MY PROFILE</h1>
+				<div class="welcome-block" id="welcomeText">Welcome back</div>
+			</header>
+
+			<section class="appointments-wrapper">
+				<div class="profile-form">
+					<div id="alertMessage"></div>
+
+					<form id="profileForm" enctype="multipart/form-data">
+						<div class="profile-picture-section">
+							<img id="profilePicturePreview" src="" alt="Profile Picture" class="profile-picture-preview" style="display:none;">
+							<div id="profilePicturePlaceholder" class="profile-picture-preview">👤</div>
+							<div class="profile-picture-upload">
+								<label for="profilePicture">Upload Profile Picture</label>
+								<input type="file" id="profilePicture" name="profile_picture" accept="image/*">
+								<div class="file-info">Max size: 5MB. Supported formats: JPG, PNG, GIF</div>
+								<button type="button" id="removePictureBtn" class="btn-remove-picture" style="display:none;">Remove Picture</button>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label>First Name *</label>
+								<input type="text" id="firstName" name="first_name" required>
+							</div>
+							<div class="form-group">
+								<label>Last Name *</label>
+								<input type="text" id="lastName" name="last_name" required>
+							</div>
+						</div>
+
+						<div class="form-row-3">
+							<div class="form-group">
+								<label>Middle Initial</label>
+								<input type="text" id="middleInitial" name="middle_initial" maxlength="10" placeholder="M">
+							</div>
+							<div class="form-group">
+								<label>Student ID</label>
+								<input type="text" id="studentId" name="student_id" placeholder="e.g., 2024-12345">
+							</div>
+							<div class="form-group">
+								<label>Age</label>
+								<input type="number" id="age" name="age" min="1" max="150" placeholder="18">
+							</div>
+						</div>
+
+						<div class="form-row">
+							<div class="form-group">
+								<label>Date of Birth</label>
+								<input type="date" id="dateOfBirth" name="date_of_birth">
+							</div>
+							<div class="form-group">
+								<label>Email *</label>
+								<input type="email" id="email" name="email" required>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label>Phone Number</label>
+							<input type="tel" id="phone" name="phone" placeholder="e.g., +63 912 345 6789">
+						</div>
+
+						<div style="display:flex;justify-content:flex-end;margin-top:32px;">
+							<button type="submit" class="btn-save">Save Changes</button>
+						</div>
+					</form>
+				</div>
+			</section>
+		</main>
+	</div>
+
+	<script>
+		const logoutBtn = document.getElementById('logoutBtn');
+		const profileForm = document.getElementById('profileForm');
+		const alertMessage = document.getElementById('alertMessage');
+		const welcomeText = document.getElementById('welcomeText');
+		const profilePictureInput = document.getElementById('profilePicture');
+		const profilePicturePreview = document.getElementById('profilePicturePreview');
+		const profilePicturePlaceholder = document.getElementById('profilePicturePlaceholder');
+		const removePictureBtn = document.getElementById('removePictureBtn');
+
+		logoutBtn.addEventListener('click', () => {
+			fetch('logout.php', { method: 'POST' }).finally(() => {
+				window.location.href = 'login.html';
+			});
+		});
+
+		function showAlert(message, type = 'success') {
+			alertMessage.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+			setTimeout(() => {
+				alertMessage.innerHTML = '';
+			}, 5000);
+		}
+
+		function updateProfilePicturePreview(file) {
+			if (file) {
+				const reader = new FileReader();
+				reader.onload = (e) => {
+					profilePicturePreview.src = e.target.result;
+					profilePicturePreview.style.display = 'block';
+					profilePicturePlaceholder.style.display = 'none';
+				};
+				reader.readAsDataURL(file);
+			}
+		}
+
+		function loadProfilePicture(path) {
+			if (path && path.trim() !== '') {
+				profilePicturePreview.src = path;
+				profilePicturePreview.style.display = 'block';
+				profilePicturePlaceholder.style.display = 'none';
+				removePictureBtn.style.display = 'block';
+				// Remove any existing remove field
+				const removeField = document.getElementById('removePictureField');
+				if (removeField) {
+					removeField.remove();
+				}
+			} else {
+				profilePicturePreview.style.display = 'none';
+				profilePicturePlaceholder.style.display = 'flex';
+				removePictureBtn.style.display = 'none';
+			}
+		}
+
+		profilePictureInput.addEventListener('change', (e) => {
+			const file = e.target.files[0];
+			if (file) {
+				// Validate file size (5MB)
+				if (file.size > 5 * 1024 * 1024) {
+					showAlert('File size must be less than 5MB.', 'error');
+					e.target.value = '';
+					return;
+				}
+				// Validate file type
+				if (!file.type.startsWith('image/')) {
+					showAlert('Please select an image file.', 'error');
+					e.target.value = '';
+					return;
+				}
+				// Remove the remove_picture field if user is uploading a new picture
+				const removeField = document.getElementById('removePictureField');
+				if (removeField) {
+					removeField.remove();
+				}
+				updateProfilePicturePreview(file);
+				removePictureBtn.style.display = 'block';
+			}
+		});
+
+		removePictureBtn.addEventListener('click', () => {
+			profilePictureInput.value = '';
+			profilePicturePreview.style.display = 'none';
+			profilePicturePlaceholder.style.display = 'flex';
+			removePictureBtn.style.display = 'none';
+			// Add hidden field to indicate removal
+			let removeField = document.getElementById('removePictureField');
+			if (!removeField) {
+				removeField = document.createElement('input');
+				removeField.type = 'hidden';
+				removeField.id = 'removePictureField';
+				removeField.name = 'remove_picture';
+				removeField.value = '1';
+				profileForm.appendChild(removeField);
+			} else {
+				removeField.value = '1';
+			}
+		});
+
+		async function loadProfile() {
+			try {
+				const res = await fetch('profile_info.php');
+				const data = await res.json();
+				
+				if (data.success) {
+					document.getElementById('firstName').value = data.first_name || '';
+					document.getElementById('lastName').value = data.last_name || '';
+					document.getElementById('middleInitial').value = data.middle_initial || '';
+					document.getElementById('studentId').value = data.student_id || '';
+					document.getElementById('age').value = data.age || '';
+					document.getElementById('dateOfBirth').value = data.date_of_birth || '';
+					document.getElementById('email').value = data.email || '';
+					document.getElementById('phone').value = data.phone || '';
+					
+					if (data.profile_picture) {
+						loadProfilePicture(data.profile_picture);
+					}
+					
+					if (data.first_name) {
+						welcomeText.textContent = `Welcome, ${data.first_name}`;
+					}
+				} else {
+					showAlert('Failed to load profile information.', 'error');
+				}
+			} catch (err) {
+				console.error('Error loading profile:', err);
+				showAlert('Failed to load profile information.', 'error');
+			}
+		}
+
+		profileForm.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			
+			const formData = new FormData(profileForm);
+			
+			// Remove picture field is already added by the remove button handler
+			
+			try {
+				const res = await fetch('update_profile.php', {
+					method: 'POST',
+					body: formData
+				});
+				
+				let data;
+				try {
+					data = await res.json();
+				} catch (parseError) {
+					const text = await res.text();
+					console.error('Response text:', text);
+					showAlert('Server error: ' + text.substring(0, 200), 'error');
+					return;
+				}
+				
+				if (data.success) {
+					showAlert('Profile updated successfully!', 'success');
+					loadProfile();
+				} else {
+					const errorMsg = data.error || 'Failed to update profile.';
+					console.error('Update error:', errorMsg);
+					showAlert(errorMsg, 'error');
+				}
+			} catch (err) {
+				console.error('Error updating profile:', err);
+				showAlert('Network error: ' + err.message + '. Please check your connection and try again.', 'error');
+			}
+		});
+
+		loadProfile();
+	</script>
+</body>
+</html>
+

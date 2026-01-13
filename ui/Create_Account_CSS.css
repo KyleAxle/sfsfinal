@@ -1,0 +1,180 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #d8e8ff;
+  overflow: hidden; /* Prevent scrollbars on zoom */
+}
+
+.container {
+  display: flex;
+  width: 1200px;       /* fixed layout */
+  height: 620px;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* LEFT SIDE */
+.left-section {
+  background-color: #0b2d66;
+  flex: 1;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.left-section h1 {
+  font-size: 3em;
+  line-height: 1.2;
+  letter-spacing: 2px;
+  margin-top: 20px; /* 👈 moves text slightly lower */
+}
+
+.left-section img {
+  width: 200%;          /* keeps it responsive and clean */
+  height: auto;
+  margin-bottom: 10px;  /* small space from bottom */
+  border-radius: 10px;
+  object-fit: contain;
+  transform: translateX(-100px); /* 👈 moves image slightly to the left */
+}
+
+
+/* RIGHT SIDE */
+.right-section {
+  flex: 1;
+  position: relative;
+  background-color: #d8e8ff;
+  padding: 40px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.logo {
+  position: absolute;
+  top: 5px;  /* moved logo slightly higher */
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo img {
+  width: 70px;
+}
+
+.help-link {
+  font-size: 13px;
+  color: #000;
+  text-decoration: none;
+  margin-top: -1px;
+}
+
+.help-link:hover {
+  text-decoration: underline;
+}
+
+/* FORM */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 60px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  outline: none;
+  border-radius: 30px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 15px;
+}
+
+.dob-section {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.dob-section input[type="date"] {
+  flex: 1;
+  border: none;
+  border-radius: 30px;
+  padding: 15px 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.age-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.age-box input {
+  width: 60px;
+  border: none;
+  border-radius: 20px;
+  padding: 10px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide number input arrows in Chrome, Edge, Safari */
+.age-box input::-webkit-inner-spin-button,
+.age-box input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.btn {
+  text-decoration: none;
+  border: none;
+  border-radius: 30px;
+  padding: 15px 40px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.back {
+  background-color: #0047b3;
+  color: #fff;
+}
+
+.back:hover {
+  background-color: #003a91;
+}
+
+.submit {
+  background-color: #0047b3;
+  color: #fff;
+}
+
+.submit:hover {
+  background-color: #003a91;
+}

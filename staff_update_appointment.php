@@ -1,0 +1,249 @@
+<?php
+// Suppress error display to ensure clean JSON output
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Start output buffering to catch any accidental output
+ob_start();
+
+session_start();
+header('Content-Type: application/json');
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+	echo json_encode(['success' => false, 'error' => 'Invalid request']);
+	exit;
+}
+
+if (!isset($_SESSION['staff_id'], $_SESSION['office_id'])) {
+	http_response_code(401);
+	echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+	exit;
+}
+
+$appointmentId = isset($_POST['appointment_id']) ? (int)$_POST['appointment_id'] : 0;
+$rawStatus = strtolower(trim($_POST['status'] ?? ''));
+$staffMessage = ''; // No longer used, but kept for backward compatibility
+$statusMap = [
+	'pending' => 'pending',
+	'approved' => 'accepted',
+	'accepted' => 'accepted',
+	'declined' => 'declined',
+	'rejected' => 'declined',
+	'completed' => 'completed'
+];
+
+if ($appointmentId <= 0 || !isset($statusMap[$rawStatus])) {
+	echo json_encode(['success' => false, 'error' => 'Invalid parameters']);
+	exit;
+}
+
+$dbStatus = $statusMap[$rawStatus];
+
+try {
+	$pdo = require __DIR__ . '/config/db.php';
+} catch (Throwable $e) {
+	http_response_code(500);
+	echo json_encode(['success' => false, 'error' => 'Database connection failed']);
+	exit;
+}
+
+$officeId = (int)$_SESSION['office_id'];
+
+/**
+ * Send SMS notification when appointment is accepted
+ * Uses the same SMS API as send_sms.php
+ */
+function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo = null) {
+	// Debug: Log what we received
+	error_log('SMS function called for appointment ID: ' . $appointmentData['appointment_id']);
+	error_log('Appointment data keys: ' . implode(', ', array_keys($appointmentData)));
+	
+	// Check if phone key exists in the data
+	if (!isset($appointmentData['phone'])) {
+		error_log('SMS notification skipped: Phone key not found in appointment data for appointment ID ' . $appointmentData['appointment_id']);
+		error_log('Available keys: ' . implode(', ', array_keys($appointmentData)));
+		return false;
+	}
+	
+	// Check if user has a phone number
+	$phoneNumber = trim($appointmentData['phone'] ?? '');
+	if (empty($phoneNumber)) {
+		error_log('SMS notification skipped: No phone number (empty or NULL) for appointment ID ' . $appointmentData['appointment_id'] . ', user: ' . ($appointmentData['first_name'] ?? 'unknown'));
+		return false;
+	}
+	
+	error_log('SMS will be sent to phone: ' . $phoneNumber . ' for appointment ID ' . $appointmentData['appointment_id']);
+	
+	// Format appointment date and time
+	$appointmentDate = $appointmentData['appointment_date'];
+	$appointmentTime = $appointmentData['appointment_time'];
+	$officeName = $appointmentData['office_name'] ?? 'our office';
+	$userName = trim(($appointmentData['first_name'] ?? '') . ' ' . ($appointmentData['last_name'] ?? ''));
+	
+	// Format date (e.g., "January 15, 2025")
+	$dateObj = DateTime::createFromFormat('Y-m-d', $appointmentDate);
+	$formattedDate = $dateObj ? $dateObj->format('F j, Y') : $appointmentDate;
+	
+	// Format time (e.g., "2:30 PM")
+	$timeObj = DateTime::createFromFormat('H:i:s', $appointmentTime);
+	$formattedTime = $timeObj ? $timeObj->format('g:i A') : $appointmentTime;
+	
+	// Generate SMS message
+	$message = "Hello" . ($userName ? " {$userName}" : "") . "! Your appointment at {$officeName} has been ACCEPTED. ";
+	$message .= "Date: {$formattedDate} at {$formattedTime}. ";
+	
+	// Add staff message if provided
+	if (!empty($staffMessage)) {
+		$message .= "Note: {$staffMessage} ";
+	}
+	
+	$message .= "Please arrive on time. Thank you!";
+	
+	// Use the same SMS API configuration as send_sms.php
+	$api_token = '331a374186640304a6ffa890f60f3f5ec550d702';
+	$url = 'https://sms.iprogtech.com/api/v1/sms_messages';
+	
+	$data = [
+		'api_token' => $api_token,
+		'message' => $message,
+		'phone_number' => $phoneNumber
+	];
+	
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_POST, true);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, [
+		'Content-Type: application/x-www-form-urlencoded'
+	]);
+	
+	$response = curl_exec($ch);
+	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	$curlError = curl_error($ch);
+	curl_close($ch);
+	
+	if ($curlError) {
+		error_log('SMS sending error for appointment ID ' . $appointmentData['appointment_id'] . ': ' . $curlError);
+		return false;
+	}
+	
+	$result = json_decode($response, true);
+	if (json_last_error() === JSON_ERROR_NONE && is_array($result)) {
+		$success = (isset($result['status']) && $result['status'] == 200) || $httpCode == 200;
+		if ($success) {
+			error_log('SMS notification sent successfully to ' . $phoneNumber . ' for appointment ID ' . $appointmentData['appointment_id']);
+			return true;
+		} else {
+			error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': ' . ($result['error'] ?? 'API returned error'));
+			return false;
+		}
+	} else {
+		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': Invalid response from SMS API');
+		return false;
+	}
+}
+
+// Fetch appointment details including user phone number for SMS notification
+$appointmentQuery = $pdo->prepare("
+	select 
+		a.appointment_id,
+		a.appointment_date,
+		a.appointment_time,
+		a.concern,
+		u.phone,
+		u.first_name,
+		u.last_name,
+		o.office_name
+	from appointments a
+	join appointment_offices ao on ao.appointment_id = a.appointment_id
+	join public.users u on u.user_id = a.user_id
+	join offices o on o.office_id = ao.office_id
+	where a.appointment_id = ?
+	  and ao.office_id = ?
+	limit 1
+");
+$appointmentQuery->execute([$appointmentId, $officeId]);
+$appointmentData = $appointmentQuery->fetch(PDO::FETCH_ASSOC);
+
+if (!$appointmentData) {
+	ob_clean();
+	echo json_encode(['success' => false, 'error' => 'Appointment not found for this office']);
+	ob_end_flush();
+	exit;
+}
+
+// Debug: Log fetched data (remove in production if needed)
+error_log('Fetched appointment data for ID ' . $appointmentId . ': phone=' . ($appointmentData['phone'] ?? 'NULL') . ', user=' . ($appointmentData['first_name'] ?? 'unknown'));
+
+// Initialize SMS variables
+$smsSent = false;
+$smsError = null;
+
+try {
+	$pdo->beginTransaction();
+
+	$update = $pdo->prepare("update appointments set status = ?::appointment_status, updated_at = now() where appointment_id = ?");
+	$update->execute([$dbStatus, $appointmentId]);
+
+$officeStatus = $dbStatus === 'accepted' ? 'approved' : $dbStatus;
+
+// Check if staff_message column exists before updating
+$checkColumn = $pdo->query("
+    SELECT column_name 
+    FROM information_schema.columns 
+    WHERE table_schema = 'public' 
+    AND table_name = 'appointment_offices' 
+    AND column_name = 'staff_message'
+")->fetch();
+
+if ($checkColumn) {
+    // Column exists, update with message
+    $updateAo = $pdo->prepare("update appointment_offices set status = ?::office_assignment_status, staff_message = ?, updated_at = now() where appointment_id = ? and office_id = ?");
+    $updateAo->execute([$officeStatus, $staffMessage ?: null, $appointmentId, $officeId]);
+} else {
+    // Column doesn't exist, update without message
+    $updateAo = $pdo->prepare("update appointment_offices set status = ?::office_assignment_status, updated_at = now() where appointment_id = ? and office_id = ?");
+    $updateAo->execute([$officeStatus, $appointmentId, $officeId]);
+}
+
+	$pdo->commit();
+	
+	// Send SMS notification if appointment is accepted/approved
+	if ($dbStatus === 'accepted' || $rawStatus === 'approved') {
+		// Send SMS in background (don't block the response)
+		$smsSent = sendAppointmentAcceptanceSMS($appointmentData, $staffMessage, $pdo);
+		if (!$smsSent) {
+			$smsError = 'SMS could not be sent (user may not have phone number)';
+		}
+	}
+	
+} catch (PDOException $e) {
+	if ($pdo->inTransaction()) {
+		$pdo->rollBack();
+	}
+	error_log('Staff update appointment error: ' . $e->getMessage());
+	http_response_code(500);
+	echo json_encode(['success' => false, 'error' => 'Failed to update status.']);
+	exit;
+}
+
+// Clear any accidental output
+ob_clean();
+
+// Output JSON response - ensure no extra output
+$response = [
+	'success' => true,
+	'status' => $officeStatus
+];
+
+if ($dbStatus === 'accepted' || $rawStatus === 'approved') {
+	$response['sms_sent'] = $smsSent ?? false;
+	if (isset($smsError) && $smsError) {
+		$response['sms_error'] = $smsError;
+	}
+}
+
+echo json_encode($response);
+ob_end_flush();
+exit;

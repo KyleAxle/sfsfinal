@@ -76,6 +76,49 @@ create table if not exists public.feedback (
   submitted_at     timestamptz not null default now()
 );
 
+create table if not exists public.appointment_messages (
+  message_id       bigserial primary key,
+  appointment_id   bigint not null references public.appointments (appointment_id) on delete cascade,
+  sender_type      varchar(20) not null check (sender_type in ('user', 'staff', 'system')),
+  sender_user_id   bigint references public.users (user_id) on delete set null,
+  sender_staff_id  bigint references public.staff (staff_id) on delete set null,
+  message          text not null,
+  is_read          boolean not null default false,
+  created_at       timestamptz not null default now(),
+  constraint appointment_messages_sender_check
+    check (
+      (sender_type = 'user' and sender_user_id is not null and sender_staff_id is null)
+      or (sender_type = 'staff' and sender_staff_id is not null and sender_user_id is null)
+      or (sender_type = 'system')
+    )
+);
+
+create index if not exists idx_appointment_messages_appointment
+  on public.appointment_messages (appointment_id, created_at);
+
+-- Staff table for office staff login
+create table if not exists public.staff (
+  staff_id         bigserial primary key,
+  email            varchar(100) not null unique,
+  password         varchar(255) not null,
+  office_id        bigint references public.offices (office_id) on delete set null,
+  office_name      varchar(100),
+  role             varchar(50) default 'staff',
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+
+create table if not exists public.office_blocked_slots (
+  block_id     bigserial primary key,
+  office_id    bigint not null references public.offices (office_id) on delete cascade,
+  block_date   date not null,
+  start_time   time not null,
+  end_time     time not null,
+  reason       text,
+  created_by   bigint references public.staff (staff_id) on delete set null,
+  created_at   timestamptz not null default now()
+);
+
 -- Office profiling history (timestamp profiling per office)
 create table if not exists public.office_profile_events (
   profile_event_id bigserial primary key,
@@ -148,6 +191,12 @@ execute function public.touch_updated_at();
 drop trigger if exists trg_appointment_offices_touch_updated_at on public.appointment_offices;
 create trigger trg_appointment_offices_touch_updated_at
 before update on public.appointment_offices
+for each row
+execute function public.touch_updated_at();
+
+drop trigger if exists trg_staff_touch_updated_at on public.staff;
+create trigger trg_staff_touch_updated_at
+before update on public.staff
 for each row
 execute function public.touch_updated_at();
 

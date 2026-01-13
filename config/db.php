@@ -7,6 +7,7 @@ require_once __DIR__ . '/env.php';
 loadEnv(dirname(__DIR__) . '/.env');
 loadEnv(__DIR__ . '/.env');
 
+// Use a static variable to cache the connection
 static $pdo = null;
 if ($pdo instanceof PDO) {
 	return $pdo;
@@ -28,5 +29,3 @@ $options = [
 
 $pdo = new PDO($dsn, $user, $pass, $options);
 return $pdo;
-
-

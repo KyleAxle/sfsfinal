@@ -1,8 +1,8 @@
 # 🚀 Supabase Integration - Quick Start
 
-Your project is configured for Supabase with connection string:
+Your project is configured for Supabase with session pooler connection string:
 ```
-postgresql://postgres:[YOUR_PASSWORD]@db.ndnoevxzgczvyghaktxn.supabase.co:5432/postgres
+postgresql://postgres.ndnoevxzgczvyghaktxn:[YOUR_PASSWORD]@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
 ```
 
 ## ⚡ Quick Setup (3 Steps)
@@ -33,11 +33,12 @@ Or open in browser: `http://localhost/sfs/test_connection.php`
 
 ## 📋 Your Connection Details
 
-- **Host**: `db.ndnoevxzgczvyghaktxn.supabase.co`
+- **Host**: `aws-1-ap-southeast-1.pooler.supabase.com`
 - **Port**: `5432`
 - **Database**: `postgres`
-- **User**: `postgres`
+- **User**: `postgres.ndnoevxzgczvyghaktxn`
 - **Password**: [Set in .env file]
+- **Connection Type**: Session Pooler (IPv4 compatible)
 
 ## 📚 Full Documentation
 

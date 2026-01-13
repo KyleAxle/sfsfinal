@@ -18,27 +18,21 @@ $sql = "SELECT
             a.concern,
             a.status
         FROM appointments a
-        JOIN offices o ON a.office_id = o.office_id";
+        JOIN appointment_offices ao ON ao.appointment_id = a.appointment_id
+        JOIN offices o ON ao.office_id = o.office_id";
 
 $params = [];
-$types = "";
 
 if ($office !== "") {
     $sql .= " WHERE o.office_name = ?";
     $params[] = $office;
-    $types .= "s";
 }
 
 $sql .= " ORDER BY a.appointment_date DESC, a.appointment_time ASC";
 
 $stmt = $pdo->prepare($sql);
-if ($office !== "") {
-    $stmt->execute([$office]);
-} else {
-    $stmt->execute();
-}
-$result = $stmt;
+$stmt->execute($params);
 
-$data = $result->fetchAll();
+$data = $stmt->fetchAll();
 echo json_encode($data);
 ?>

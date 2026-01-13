@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Create Account</title>
+  <link rel="stylesheet" href="Create_Account_CSS.css">
+  <!--
+    Supabase configuration (replace values with your project info).
+    If left empty, the page will fallback to localStorage-based demo behavior.
+  -->
+  <meta name="supabase-url" content="https://qqxznbyyttjetltturgf.supabase.co">
+  <meta name="supabase-key" content="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxeHpuYnl5dHRqZXRsdHR1cmdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI3NzYwMzcsImV4cCI6MjA3ODM1MjAzN30.YSntqIoI9Fgi-Nqr2_iE2EYPOE_Yyie73rQ1oRs5g1o">
+  <!-- Supabase JS (UMD build) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Left side section -->
+    <div class="left-section">
+      <h1>CREATE<br>ACCOUNT</h1>
+      <img src="C:\\Users\\cuber\\OneDrive\\Desktop\\Capstone 2025\\Picture\\Building.png" alt="School Building">
+    </div>
+
+    <!-- Right side section -->
+    <div class="right-section">
+      <div class="logo">
+        <img src="C:\\Users\\cuber\\OneDrive\\Desktop\\Capstone 2025\\Picture\\cjclogo.png" alt="School Logo">
+        <a href="#" class="help-link">Need Help?</a>
+      </div>
+
+      <form id="signupForm" class="signup-form">
+        <div class="input-group">
+          <input id="fullName" name="fullName" type="text" placeholder="Full Name" required>
+        </div>
+        <div class="input-group">
+          <input id="email" name="email" type="email" placeholder="Email" required>
+        </div>
+        <div class="input-group">
+          <input id="password" name="password" type="password" placeholder="Password" required>
+        </div>
+        <div class="input-group">
+          <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm Password" required>
+        </div>
+        <div class="input-group">
+          <input id="phone" name="phone" type="tel" placeholder="Phone Number" required>
+        </div>
+
+        <div class="dob-section">
+          <input id="dob" name="dob" type="date" required>
+          <div class="age-box">
+            <label>AGE:</label>
+            <input id="age" name="age" type="number" min="1" max="60" placeholder="0" required>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <a href="Email_Login.html" class="btn back">Back</a>
+          <button type="submit" class="btn submit">Get Started</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ✅ JavaScript to strictly limit AGE input -->
+  <script>
+    // Keep age input in valid range
+    const ageInput = document.querySelector('.age-box input');
+    ageInput.addEventListener('input', () => {
+      if (ageInput.value > 60) ageInput.value = 60;
+      if ((ageInput.value < 1 || ageInput.value === "") && ageInput.value !== "") ageInput.value = 1;
+    });
+
+    // Signup handler: stores users in localStorage under key 'users' (object keyed by email)
+    const signupForm = document.getElementById('signupForm');
+
+    // Initialize Supabase client if keys provided in meta tags
+    const SUPABASE_URL = document.querySelector('meta[name="supabase-url"]').content || '';
+    const SUPABASE_KEY = document.querySelector('meta[name="supabase-key"]').content || '';
+    let supabaseClient = null;
+    try {
+      if (SUPABASE_URL && SUPABASE_KEY && window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch (err) {
+      console.warn('Supabase client init failed:', err);
+      supabaseClient = null;
+    }
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const phone = document.getElementById('phone').value.trim();
+      const dob = document.getElementById('dob').value;
+      const age = document.getElementById('age').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match. Please check.');
+        return;
+      }
+
+          // If Supabase configured, attempt to create an auth user there
+      if (supabaseClient) {
+        try {
+          // Use Supabase Auth to create the user. This may send a confirmation email depending on your settings.
+              // NOTE: In supabase-js v2, user metadata goes inside options.data
+              const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+                email,
+                password,
+                options: {
+                  data: { fullName, phone, dob, age }
+                }
+              });
+          if (signUpError) {
+            alert('Sign up failed: ' + signUpError.message);
+            return;
+          }
+
+          // Determine whether we have an authenticated session. If not (email confirmation required),
+          // we won't be able to write to protected DB tables from client-side. Try to sign in automatically
+          // to obtain a session when possible.
+          let userId = signUpData?.user?.id || null;
+          let session = signUpData?.session || null; // If email confirmations are enabled, this will be null
+
+          // Create user profile in the users table
+          // Option 1: Use database function (bypasses RLS) - RECOMMENDED
+          // Option 2: Use direct insert (requires RLS policy to allow it)
+          // We can proceed even without a session (e.g., email confirmation required) because the RPC runs SECURITY DEFINER
+          if (userId) {
+            console.log('Creating user profile for:', { userId, email, fullName });
+            
+            try {
+              // Prepare values
+              const ageInt = age ? parseInt(age, 10) : null;
+              const dobDate = dob || null;
+
+              console.log('Profile data prepared:', { userId, email, fullName, phone: phone || null, dob: dobDate, age: ageInt });
+
+              // Method 1: Try using the database function (if it exists)
+              // This bypasses RLS policies and is more secure
+              console.log('Attempting to call create_user_profile function...');
+              const { data: functionData, error: functionError } = await supabaseClient.rpc('create_user_profile', {
+                user_id: userId,
+                user_email: email,
+                user_full_name: fullName || null,
+                user_phone: phone || null,
+                user_dob: dobDate,
+                user_age: ageInt
+              });
+
+              if (functionError) {
+                // If function doesn't exist or fails, try direct insert
+                console.error('Function call failed:', functionError);
+                console.warn('Function error details:', {
+                  message: functionError.message,
+                  code: functionError.code,
+                  details: functionError.details,
+                  hint: functionError.hint
+                });
+                
+                // Method 2: Direct insert (requires RLS policy to allow authenticated users)
+                console.log('Trying direct insert as fallback...');
+                const insertRow = {
+                  id: userId,
+                  full_name: fullName || null,
+                  email: email || null,
+                  phone: phone || null,
+                  dob: dobDate,
+                  age: ageInt
+                };
+
+                console.log('Inserting row:', insertRow);
+                const { data: insertData, error: insertError } = await supabaseClient.from('users').insert([insertRow]);
+                
+                if (insertError) {
+                  console.error('Direct insert also failed:', insertError);
+                  console.error('Insert error details:', {
+                    message: insertError.message,
+                    code: insertError.code,
+                    details: insertError.details,
+                    hint: insertError.hint
+                  });
+                  alert('Account created but profile setup failed. Check console for details. Error: ' + insertError.message);
+                } else {
+                  console.log('✅ Successfully inserted users row:', insertData);
+                  alert('Account and profile created successfully!');
+                }
+              } else {
+                console.log('✅ User profile created via function:', functionData);
+                if (session) {
+                  // Only verify via SELECT if we have an authenticated session; otherwise RLS hides rows
+                  let verified = false;
+                  for (let attempt = 1; attempt <= 5; attempt++) {
+                    const { data: verifyData, error: verifyError, status: verifyStatus } = await supabaseClient
+                      .from('users')
+                      .select('*')
+                      .eq('id', userId)
+                      .maybeSingle();
+  
+                    if (verifyData) {
+                      console.log(`✅ Profile verified in database on attempt ${attempt}:`, verifyData);
+                      verified = true;
+                      break;
+                    }
+  
+                    // 406/empty or transient error – wait and retry
+                    console.warn(`Profile not found yet (attempt ${attempt}). Status:`, verifyStatus, 'Error:', verifyError?.message || verifyError);
+                    await new Promise(r => setTimeout(r, 300));
+                  }
+  
+                  if (!verified) {
+                    console.warn('Profile verification skipped after retries; proceeding. It should appear shortly.');
+                    alert('Account created, but profile verification failed. Please check your profile in the dashboard.');
+                  } else {
+                    alert('Account and profile created successfully!');
+                  }
+                } else {
+                  // No session (likely email confirmation required) - cannot SELECT due to RLS
+                  alert('Account created! If email confirmation is required, please check your inbox. You can complete profile after login.');
+                }
+              }
+            } catch (profileErr) {
+              console.error('Profile creation error (catch block):', profileErr);
+              alert('Account created but profile setup encountered an error. Check console for details.');
+            }
+
+          // Always require email confirmation and manual login
+          alert('Account created. Please check your email to confirm your account, then log in.');
+          window.location.href = 'Email_Login.html';
+            return;
+          } else {
+            console.warn('No session or userId available. Session:', !!session, 'UserId:', userId);
+          }
+
+          // If we reach here, either confirmation is required or session couldn't be established
+          alert('Account created. If your project requires email confirmation, please check your inbox. Otherwise sign in to continue.');
+          window.location.href = 'Email_Login.html';
+          return;
+        } catch (err) {
+          console.error('Supabase signUp error', err);
+          alert('Unexpected error during sign up. See console for details.');
+          return;
+        }
+      }
+
+      // Fallback: localStorage-based demo behavior
+      const usersJSON = localStorage.getItem('users');
+      const users = usersJSON ? JSON.parse(usersJSON) : {};
+
+      if (users[email]) {
+        alert('An account with that email already exists locally. Please login or use another email.');
+        return;
+      }
+
+      users[email] = {
+        fullName,
+        email,
+        password, // Note: stored in plain text for this simple demo; do NOT do this in production
+        phone,
+        dob,
+        age
+      };
+
+      localStorage.setItem('users', JSON.stringify(users));
+
+      // Redirect to login so user can sign in
+      alert('Account created locally. You will be redirected to login.');
+      window.location.href = 'Email_Login.html';
+    });
+  </script>
+</body>
+</html>

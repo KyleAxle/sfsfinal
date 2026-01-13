@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+config/.env
 
 # PHP
 vendor/
@@ -11,6 +12,10 @@ composer.lock
 
 # Google API Client (large dependency - should be installed via composer)
 google-api-php-client/vendor/
+
+# User uploads - contains sensitive data
+uploads/
+uploads/**/*
 
 # IDE
 .vscode/
@@ -29,3 +34,15 @@ desktop.ini
 *.bak
 *.old
 
+# Debug and test files
+debug_*.php
+test_*.php
+check_*.php
+*.txt
+!README*.txt
+
+# Batch files (Windows specific)
+*.bat
+
+# Railway
+.railway/

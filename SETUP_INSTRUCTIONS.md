@@ -15,10 +15,10 @@ This will create the `.env` file with your Supabase connection details.
 
 Create a file named `.env` in your project root with this content:
 ```env
-SUPABASE_DB_HOST=db.ndnoevxzgczvyghaktxn.supabase.co
+SUPABASE_DB_HOST=aws-1-ap-southeast-1.pooler.supabase.com
 SUPABASE_DB_PORT=5432
 SUPABASE_DB_NAME=postgres
-SUPABASE_DB_USER=postgres
+SUPABASE_DB_USER=postgres.ndnoevxzgczvyghaktxn
 SUPABASE_DB_PASSWORD=YOUR_SUPABASE_PASSWORD
 SUPABASE_DB_SSLMODE=require
 ```
@@ -32,10 +32,10 @@ SUPABASE_DB_SSLMODE=require
 
 Your `.env` file should look like this:
 ```env
-SUPABASE_DB_HOST=db.ndnoevxzgczvyghaktxn.supabase.co
+SUPABASE_DB_HOST=aws-1-ap-southeast-1.pooler.supabase.com
 SUPABASE_DB_PORT=5432
 SUPABASE_DB_NAME=postgres
-SUPABASE_DB_USER=postgres
+SUPABASE_DB_USER=postgres.ndnoevxzgczvyghaktxn
 SUPABASE_DB_PASSWORD=your_actual_password_here
 SUPABASE_DB_SSLMODE=require
 ```
@@ -128,8 +128,10 @@ Once the connection test passes, your project is fully integrated with Supabase.
 
 ### "Connection refused" or "Could not connect"
 - Double-check your password in `.env` file
-- Verify the host is correct: `db.ndnoevxzgczvyghaktxn.supabase.co`
+- Verify the host is correct: `aws-1-ap-southeast-1.pooler.supabase.com`
+- Verify the user is correct: `postgres.ndnoevxzgczvyghaktxn`
 - Make sure SSL mode is set to `require`
+- Note: Session pooler is IPv4 compatible - use Direct Connection if connecting via IPv6 network
 
 ### "Call to undefined function pg_connect()"
 - PHP PostgreSQL extension is not enabled
