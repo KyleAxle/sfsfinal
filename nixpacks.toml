@@ -1,8 +1,10 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_pgsql", "php82Extensions.pgsql", "php82Extensions.opcache"]
+nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_pgsql", "php82Extensions.pgsql", "php82Extensions.opcache", "composer"]
 
 [phases.install]
-cmds = ["echo 'No additional install steps needed'"]
+cmds = [
+    "cd google-api-php-client && composer install --no-dev --optimize-autoloader"
+]
 
 [start]
 cmd = "php -d opcache.enable=1 -d opcache.memory_consumption=128 -d opcache.max_accelerated_files=10000 -S 0.0.0.0:$PORT -t ."
