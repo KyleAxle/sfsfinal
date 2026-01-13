@@ -881,16 +881,22 @@
             messagesList.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Loading conversations...</p></div></div>';
             
             fetch('get_conversations.php')
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.json();
+                })
                 .then(data => {
-                    if (data.success && data.conversations) {
-                        if (data.conversations.length === 0) {
+                    if (data.success) {
+                        const conversations = data.conversations || [];
+                        if (conversations.length === 0) {
                             messagesList.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>No messages yet. Staff will contact you here if needed.</p></div></div>';
                             return;
                         }
                         
                         messagesList.innerHTML = '';
-                        data.conversations.forEach(conv => {
+                        conversations.forEach(conv => {
                             const convDiv = document.createElement('div');
                             convDiv.className = 'conversation-item';
                             convDiv.innerHTML = `
@@ -913,12 +919,14 @@
                             messagesList.appendChild(convDiv);
                         });
                     } else {
-                        messagesList.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Error loading conversations. Please try again.</p></div></div>';
+                        const errorMsg = data.error || 'Unknown error';
+                        console.error('Server error:', errorMsg);
+                        messagesList.innerHTML = `<div class="ai-message ai-assistant"><div class="ai-message-content"><p style="color:#dc2626;">Error: ${escapeHtml(errorMsg)}</p></div></div>`;
                     }
                 })
                 .catch(err => {
                     console.error('Error loading conversations:', err);
-                    messagesList.innerHTML = '<div class="ai-message ai-assistant"><div class="ai-message-content"><p>Error loading conversations. Please try again.</p></div></div>';
+                    messagesList.innerHTML = `<div class="ai-message ai-assistant"><div class="ai-message-content"><p style="color:#dc2626;">Error loading conversations: ${escapeHtml(err.message)}</p></div></div>`;
                 });
         }
 

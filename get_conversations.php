@@ -70,7 +70,7 @@ try {
             cm.is_read,
             CASE 
                 WHEN cm.other_type = 'user' THEN u.first_name || ' ' || u.last_name
-                WHEN cm.other_type = 'staff' THEN COALESCE(s.office_name, 'Staff Office')
+                WHEN cm.other_type = 'staff' THEN COALESCE(o.office_name, s.office_name, 'Staff Office')
                 ELSE 'Unknown'
             END as other_name,
             (SELECT COUNT(*) FROM public.messages m2 
@@ -82,6 +82,7 @@ try {
         FROM conversation_messages cm
         LEFT JOIN public.users u ON cm.other_type = 'user' AND cm.other_id = u.user_id
         LEFT JOIN public.staff s ON cm.other_type = 'staff' AND cm.other_id = s.staff_id
+        LEFT JOIN public.offices o ON cm.other_type = 'staff' AND s.office_id = o.office_id
         WHERE cm.rn = 1
         ORDER BY cm.created_at DESC
     ");
@@ -124,10 +125,19 @@ try {
         'available_users' => $availableUsers
     ]);
 } catch (Exception $e) {
+    error_log('get_conversations.php error: ' . $e->getMessage());
+    error_log('Stack trace: ' . $e->getTraceAsString());
     http_response_code(400);
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
+    ]);
+} catch (PDOException $e) {
+    error_log('get_conversations.php PDO error: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Database error: ' . $e->getMessage()
     ]);
 }
 
