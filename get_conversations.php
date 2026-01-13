@@ -82,7 +82,7 @@ try {
         FROM conversation_messages cm
         LEFT JOIN public.users u ON cm.other_type = 'user' AND cm.other_id = u.user_id
         LEFT JOIN public.staff s ON cm.other_type = 'staff' AND cm.other_id = s.staff_id
-        LEFT JOIN public.offices o ON cm.other_type = 'staff' AND s.office_id = o.office_id
+        LEFT JOIN public.offices o ON s.office_id = o.office_id
         WHERE cm.rn = 1
         ORDER BY cm.created_at DESC
     ");

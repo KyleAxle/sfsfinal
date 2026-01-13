@@ -81,7 +81,7 @@ try {
         FROM public.messages m
         LEFT JOIN public.users u ON m.sender_user_id = u.user_id
         LEFT JOIN public.staff s ON m.sender_staff_id = s.staff_id
-        LEFT JOIN public.offices o ON m.sender_type = 'staff' AND s.office_id = o.office_id
+        LEFT JOIN public.offices o ON s.office_id = o.office_id
         WHERE (
             (m.sender_type = ? AND 
              CASE WHEN m.sender_type = 'user' THEN m.sender_user_id ELSE m.sender_staff_id END = ? 
