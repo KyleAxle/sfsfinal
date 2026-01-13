@@ -75,124 +75,350 @@ After creating the repository, you'll see a page with setup instructions. Look f
 
 ## Part 3: Uploading Your Code to GitHub
 
-**What we're doing**: We're copying your project files from your computer to GitHub.
+**What we're doing**: We're copying your project files from your computer to GitHub so Railway can access them.
 
-### Step 1: Open Command Prompt in Your Project Folder
+---
 
-**Option A: Using File Explorer (Easiest)**
-1. Open File Explorer (Windows) or Finder (Mac)
-2. Navigate to: `C:\Users\cuber\OneDrive\Desktop\SFSFINAL\sfs`
-3. Click in the address bar and type `cmd` (Windows) or right-click and select "New Terminal at Folder" (Mac)
-4. Press Enter - this opens Command Prompt in the right folder
+### ⚠️ IMPORTANT: Understanding Command Format
 
-**Option B: Using Command Prompt**
-1. Open Command Prompt
-2. Type this command and press Enter:
-   ```bash
-   cd C:\Users\cuber\OneDrive\Desktop\SFSFINAL\sfs
-   ```
+**Before we start, you need to know this:**
 
-### Step 2: Initialize Git (First Time Only)
-
-**What this does**: Tells Git to start tracking changes in this folder.
-
-Type this command and press Enter:
-```bash
+When you see commands like this in the guide:
+```
 git init
 ```
 
-You should see: `Initialized empty Git repository...`
+**You should ONLY type**: `git init` (without the backticks or the word "bash")
 
-### Step 3: Check What Files Will Be Uploaded
+**DO NOT type**:
+- The three backticks (```)
+- The word "bash"
+- Any markdown formatting
+
+**Just type the actual command** and press Enter!
+
+---
+
+### Step 1: Open Command Prompt in Your Project Folder
+
+**Method 1: Using File Explorer (Easiest for Beginners)**
+
+1. Open **File Explorer** (the folder icon on your taskbar)
+2. In the address bar at the top, type: `C:\Users\cuber\OneDrive\Desktop\SFSFINAL\sfs`
+3. Press **Enter** - this will take you to your project folder
+4. Now, **click in the address bar again** and type: `cmd`
+5. Press **Enter** - this opens Command Prompt in the correct folder!
+
+You should see something like:
+```
+C:\Users\cuber\OneDrive\Desktop\SFSFINAL\sfs>
+```
+
+**Method 2: Using Command Prompt Directly**
+
+1. Press the **Windows key + R**
+2. Type: `cmd`
+3. Press **Enter**
+4. In the Command Prompt window, type this EXACTLY (copy and paste if possible):
+   ```
+   cd C:\Users\cuber\OneDrive\Desktop\SFSFINAL\sfs
+   ```
+5. Press **Enter**
+
+You should now see:
+```
+C:\Users\cuber\OneDrive\Desktop\SFSFINAL\sfs>
+```
+
+✅ **If you see this, you're in the right place!** If not, check that the folder path is correct.
+
+---
+
+### Step 2: Set Up Git (First Time Only - Do This Once)
+
+**What this does**: Tells Git who you are so it can track your changes.
+
+**Only do this if you've never used Git before on this computer.**
+
+Type these commands ONE AT A TIME (press Enter after each):
+
+**Command 1: Set your name**
+```
+git config --global user.name "Your Name"
+```
+*(Replace "Your Name" with your actual name, like "Kyle Paden")*
+
+**Command 2: Set your email**
+```
+git config --global user.email "your.email@example.com"
+```
+*(Replace with the email you used for GitHub)*
+
+**Example:**
+```
+git config --global user.name "Kyle Paden"
+git config --global user.email "cuberkyle969@gmail.com"
+```
+
+✅ **You only need to do this once!** After this, Git will remember who you are.
+
+---
+
+### Step 3: Initialize Git in Your Project Folder
+
+**What this does**: Tells Git to start tracking this folder and all files in it.
+
+Type this command and press Enter:
+```
+git init
+```
+
+**What you should see:**
+```
+Initialized empty Git repository in C:/Users/cuber/OneDrive/Desktop/SFSFINAL/sfs/.git/
+```
+
+✅ **If you see this message, it worked!**
+
+**If you see "fatal: not a git repository"**: Make sure you're in the correct folder (see Step 1).
+
+---
+
+### Step 4: Check What Files Git Found
+
+**What this does**: Shows you all the files that will be uploaded to GitHub.
 
 Type this command:
-```bash
+```
 git status
 ```
 
-You'll see a list of files. This is normal! It shows all your project files.
+**What you'll see:**
+- A list of files under "Untracked files"
+- This is NORMAL! It's showing all your project files
+- You might see files like: `login.html`, `admin/`, `assets/`, etc.
 
-### Step 4: Add All Files to Git
+✅ **This is good!** It means Git found your files.
 
-**What this does**: Tells Git which files to save.
+---
+
+### Step 5: Tell Git to Add All Your Files
+
+**What this does**: Tells Git "I want to save all these files."
 
 Type this command:
-```bash
+```
 git add .
 ```
 
-The `.` means "all files in this folder". You won't see any output - that's normal!
+**Important Notes:**
+- The `.` (dot) means "all files in this folder"
+- You won't see any output - **this is normal!**
+- If you see an error, make sure you're in the right folder
 
-### Step 5: Create Your First Commit
+✅ **No error message = it worked!**
 
-**What is a Commit?** Think of it as saving a snapshot of your project.
+---
+
+### Step 6: Save Your Files (Create a Commit)
+
+**What is a Commit?** Think of it like saving a game. You're taking a snapshot of all your files at this moment.
 
 Type this command:
-```bash
+```
 git commit -m "Initial commit: SFS Appointment System"
 ```
 
-**Note**: If this is your first time using Git, you might need to set your name and email first:
-```bash
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
+**What you should see:**
+```
+[main (root-commit) abc1234] Initial commit: SFS Appointment System
+ X files changed, Y insertions(+)
 ```
 
-Then run the commit command again.
+✅ **If you see something like this, it worked!**
 
-### Step 6: Connect to Your GitHub Repository
+**Common Error: "Please tell me who you are"**
+- This means you skipped Step 2
+- Go back to Step 2 and set your name and email first
 
-**What this does**: Links your local project to your GitHub repository.
+---
 
-Replace `YOUR_USERNAME` and `YOUR_REPO_NAME` with your actual GitHub username and repository name:
+### Step 7: Connect Your Project to GitHub
 
-```bash
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+**What this does**: Links your local project folder to your GitHub repository.
+
+**First, get your GitHub repository URL:**
+1. Go to your GitHub repository page (the one you created in Part 2)
+2. Click the green **"Code"** button
+3. Make sure **"HTTPS"** is selected (not SSH)
+4. Copy the URL (it looks like: `https://github.com/KyleAxle/sfsfinal.git`)
+
+**Now, in Command Prompt, type this command:**
+
+**If you DON'T have a remote yet:**
+```
+git remote add origin https://github.com/KyleAxle/sfsfinal.git
+```
+*(Replace with YOUR actual repository URL)*
+
+**If you get "remote origin already exists" error:**
+1. First, remove the old remote:
+   ```
+   git remote remove origin
+   ```
+2. Then add the correct one:
+   ```
+   git remote add origin https://github.com/KyleAxle/sfsfinal.git
+   ```
+
+**Verify it's correct:**
+```
+git remote -v
 ```
 
-**Example**: If your username is `johnsmith` and repo is `sfs-appointment-system`:
-```bash
-git remote add origin https://github.com/johnsmith/sfs-appointment-system.git
+**What you should see:**
+```
+origin  https://github.com/KyleAxle/sfsfinal.git (fetch)
+origin  https://github.com/KyleAxle/sfsfinal.git (push)
 ```
 
-### Step 7: Push Your Code to GitHub
+✅ **If you see your repository URL twice, it's correct!**
 
-**What this does**: Uploads all your files to GitHub.
+---
 
-Type these commands one by one:
-```bash
+### Step 8: Create a Personal Access Token (For Authentication)
+
+**Why?** GitHub doesn't let you use your password anymore. You need a special token.
+
+**Step 8a: Create the Token**
+
+1. Go to: https://github.com/settings/tokens
+2. Click **"Generate new token"** (or "Generate new token (classic)" if you see that option)
+3. **Token name**: Type `Railway Deployment` (or any name you want)
+4. **Expiration**: Choose:
+   - **"90 days"** (safer, but you'll need to create a new one later)
+   - **"No expiration"** (easier, but less secure)
+5. **Select scopes**: Scroll down and find **"repo"**
+   - ✅ **Check the box next to "repo"**
+   - This gives the token permission to access your repositories
+6. Scroll all the way down and click **"Generate token"** (green button)
+7. **IMPORTANT**: You'll see a long string of letters and numbers
+   - **COPY THIS IMMEDIATELY!** (Click the copy icon, or select all and Ctrl+C)
+   - **You won't be able to see it again!**
+   - **Save it somewhere safe** (like a text file or password manager)
+
+**The token looks like:** `ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+
+✅ **Keep this token safe!** You'll need it in the next step.
+
+---
+
+### Step 9: Upload Your Files to GitHub (Push)
+
+**What this does**: Actually uploads all your files to GitHub.
+
+**Step 9a: Rename your branch to "main"**
+
+Type this command:
+```
 git branch -M main
+```
+
+**You won't see any output - that's normal!**
+
+**Step 9b: Push to GitHub**
+
+Type this command:
+```
 git push -u origin main
 ```
 
-### Step 8: Authenticate with GitHub
+**What will happen:**
+1. Git will ask for your **username**
+   - Type your GitHub username (like `KyleAxle`)
+   - Press Enter
 
-When you run `git push`, you'll be asked for credentials:
+2. Git will ask for your **password**
+   - **DO NOT type your GitHub password!**
+   - **Paste your Personal Access Token** (the one you created in Step 8)
+   - Press Enter
 
-1. **Username**: Enter your GitHub username
-2. **Password**: **DO NOT use your GitHub password!** Instead, use a **Personal Access Token**
+**Important Notes:**
+- When you paste the token, you won't see anything appear (this is normal for security)
+- Just paste it and press Enter
+- It might take 30 seconds to a few minutes depending on how many files you have
 
-#### How to Create a Personal Access Token:
+**What you should see:**
+```
+Enumerating objects: X, done.
+Counting objects: 100% (X/X), done.
+Writing objects: 100% (X/X), done.
+To https://github.com/KyleAxle/sfsfinal.git
+ * [new branch]      main -> main
+Branch 'main' set up to track remote branch 'main' from 'origin'.
+```
 
-1. Go to https://github.com/settings/tokens
-2. Click **"Generate new token"** → **"Generate new token (classic)"**
-3. Give it a name like "Railway Deployment"
-4. Select expiration (90 days or "No expiration")
-5. Check the box **"repo"** (this gives access to repositories)
-6. Scroll down and click **"Generate token"**
-7. **COPY THE TOKEN IMMEDIATELY** (you won't see it again!)
-8. Paste this token when Git asks for your password
+✅ **If you see "Writing objects" and "new branch", it worked!**
 
-**If you get an error**: Make sure you copied the token correctly and that it has "repo" permissions.
+**Common Errors:**
 
-### Step 9: Verify Upload
+**Error: "Permission denied" or "403"**
+- You're using the wrong username or token
+- Make sure you copied the token correctly
+- Make sure the token has "repo" permissions
+- Try creating a new token
 
-1. Go to your GitHub repository page: `https://github.com/YOUR_USERNAME/YOUR_REPO_NAME`
-2. You should see all your files! ✅
+**Error: "remote origin already exists"**
+- Run: `git remote remove origin`
+- Then run: `git remote add origin https://github.com/KyleAxle/sfsfinal.git`
+- Then try pushing again
 
-**Common Issues:**
-- **"remote origin already exists"**: Run `git remote remove origin` first, then try again
-- **"Authentication failed"**: Make sure you're using a Personal Access Token, not your password
+**Error: "Authentication failed"**
+- Make sure you're using the Personal Access Token, not your password
+- Make sure the token hasn't expired
+- Try creating a new token
+
+---
+
+### Step 10: Verify Your Files Are on GitHub
+
+**What this does**: Confirms that all your files were uploaded successfully.
+
+1. Open your web browser
+2. Go to: `https://github.com/KyleAxle/sfsfinal` (replace with your username and repo name)
+3. **You should see all your files!** Like:
+   - `login.html`
+   - `admin/` folder
+   - `assets/` folder
+   - `config/` folder
+   - All your other project files
+
+✅ **If you can see your files on GitHub, congratulations! You did it!**
+
+**If you don't see your files:**
+- Wait a minute and refresh the page
+- Check that you're looking at the right repository
+- Make sure the push completed successfully (check Step 9 for errors)
+
+---
+
+## 🎉 Success! What's Next?
+
+If you can see your files on GitHub, you're ready for the next part: **Deploying to Railway** (Part 4).
+
+**Quick Summary of What You Just Did:**
+1. ✅ Set up Git on your computer
+2. ✅ Told Git to track your project folder
+3. ✅ Saved all your files (created a commit)
+4. ✅ Connected your folder to GitHub
+5. ✅ Uploaded all files to GitHub
+
+**Remember**: Every time you make changes to your code, you'll need to:
+1. `git add .`
+2. `git commit -m "Description of changes"`
+3. `git push origin main`
+
+But for now, you're done with GitHub! 🎊
 
 ---
 
