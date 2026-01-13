@@ -1,6 +1,10 @@
 <?php
 header('Content-Type: application/json');
 
+// Cache offices for 5 minutes (they don't change often)
+require_once __DIR__ . '/config/cache_headers.php';
+setCacheHeaders(300); // 5 minutes
+
 try {
     $pdo = require __DIR__ . '/config/db.php';
 } catch (Throwable $e) {

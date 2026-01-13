@@ -1033,7 +1033,7 @@
                 if (currentConversation && messageThreadView.style.display !== 'none') {
                     loadMessageThread();
                 }
-            }, 5000);
+            }, 10000); // Reduced frequency: 10 seconds instead of 5
         }
 
         // Function to stop thread polling
@@ -1109,9 +1109,9 @@
             });
         }
 
-        // Poll for unread messages every 30 seconds
+        // Poll for unread messages every 60 seconds (reduced frequency for better performance)
         checkUnreadMessages();
-        setInterval(checkUnreadMessages, 30000);
+        setInterval(checkUnreadMessages, 60000);
     </script>
 </body>
 </html>

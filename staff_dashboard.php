@@ -658,7 +658,7 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 				if (currentChatUserId) {
 					loadChatMessages();
 				}
-			}, 3000);
+			}, 5000); // Reduced frequency: 5 seconds instead of 3
 		}
 
 		renderAppointments();
