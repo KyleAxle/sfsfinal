@@ -76,7 +76,7 @@ try {
             m.created_at,
             CASE 
                 WHEN m.sender_type = 'user' THEN u.first_name || ' ' || u.last_name
-                WHEN m.sender_type = 'staff' THEN s.email
+                WHEN m.sender_type = 'staff' THEN COALESCE(s.office_name, 'Staff Office')
             END as sender_name
         FROM public.messages m
         LEFT JOIN public.users u ON m.sender_user_id = u.user_id
