@@ -60,11 +60,42 @@ try {
     if ($recipientType === 'user') {
         $recipientUserId = $recipientId;
     } else {
-        $recipientStaffId = $recipientId;
+        // If user is sending to staff, recipient_id might be office_id
+        // Find a staff member from that office
+        if ($senderType === 'user') {
+            // Check if recipientId is an office_id
+            $officeCheck = $pdo->prepare("
+                SELECT staff_id, office_id 
+                FROM public.staff 
+                WHERE office_id = ? 
+                LIMIT 1
+            ");
+            $officeCheck->execute([$recipientId]);
+            $staffFromOffice = $officeCheck->fetch(PDO::FETCH_ASSOC);
+            
+            if ($staffFromOffice) {
+                // recipientId is office_id, use the staff_id
+                $recipientStaffId = (int)$staffFromOffice['staff_id'];
+            } else {
+                // recipientId is staff_id, use it directly
+                $recipientStaffId = $recipientId;
+            }
+        } else {
+            // Staff sending to user - use recipientId directly
+            $recipientStaffId = $recipientId;
+        }
     }
 
     if ($recipientId <= 0) {
         throw new Exception('Invalid recipient ID');
+    }
+    
+    // Final validation
+    if ($recipientType === 'user' && $recipientUserId <= 0) {
+        throw new Exception('Invalid recipient user ID');
+    }
+    if ($recipientType === 'staff' && $recipientStaffId <= 0) {
+        throw new Exception('Invalid recipient staff ID or office ID');
     }
 
     // Insert message
