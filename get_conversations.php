@@ -70,7 +70,12 @@ try {
             cm.is_read,
             CASE 
                 WHEN cm.other_type = 'user' THEN u.first_name || ' ' || u.last_name
-                WHEN cm.other_type = 'staff' THEN COALESCE(o.office_name, s.office_name, 'Staff Office')
+                WHEN cm.other_type = 'staff' THEN 
+                    CASE 
+                        WHEN o.office_name IS NOT NULL THEN o.office_name
+                        WHEN s.office_name IS NOT NULL THEN s.office_name
+                        ELSE 'Staff Office'
+                    END
                 ELSE 'Unknown'
             END as other_name,
             (SELECT COUNT(*) FROM public.messages m2 
