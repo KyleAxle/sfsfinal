@@ -1,9 +1,10 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_pgsql", "php82Extensions.pgsql", "php82Extensions.opcache", "composer"]
+nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_pgsql", "php82Extensions.pgsql", "php82Extensions.opcache", "curl"]
 
 [phases.install]
 cmds = [
-    "cd google-api-php-client && composer install --no-dev --optimize-autoloader"
+    "curl -sS https://getcomposer.org/installer | php",
+    "php composer.phar install --no-dev --optimize-autoloader --working-dir=google-api-php-client"
 ]
 
 [start]
