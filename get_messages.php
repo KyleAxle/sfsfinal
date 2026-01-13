@@ -61,55 +61,106 @@ try {
         throw new Exception("Cannot get messages with same type (current: $currentType, other: $otherType). Current ID: $currentId, Other ID: $otherId");
     }
 
-    // Build query based on who is the sender/recipient
-    $stmt = $pdo->prepare("
-        SELECT 
-            m.message_id,
-            m.sender_type,
-            m.sender_user_id,
-            m.sender_staff_id,
-            m.recipient_type,
-            m.recipient_user_id,
-            m.recipient_staff_id,
-            m.message,
-            m.is_read,
-            m.created_at,
-            CASE 
-                WHEN m.sender_type = 'user' THEN u.first_name || ' ' || u.last_name
-                WHEN m.sender_type = 'staff' THEN 
-                    CASE 
-                        WHEN o.office_name IS NOT NULL THEN o.office_name
-                        WHEN s.office_name IS NOT NULL THEN s.office_name
-                        ELSE 'Staff Office'
-                    END
-            END as sender_name
-        FROM public.messages m
-        LEFT JOIN public.users u ON m.sender_user_id = u.user_id
-        LEFT JOIN public.staff s ON m.sender_staff_id = s.staff_id
-        LEFT JOIN public.offices o ON s.office_id = o.office_id
-        WHERE (
-            (m.sender_type = ? AND 
-             CASE WHEN m.sender_type = 'user' THEN m.sender_user_id ELSE m.sender_staff_id END = ? 
-             AND m.recipient_type = ? AND 
-             CASE WHEN m.recipient_type = 'user' THEN m.recipient_user_id ELSE m.recipient_staff_id END = ?)
-            OR
-            (m.recipient_type = ? AND 
-             CASE WHEN m.recipient_type = 'user' THEN m.recipient_user_id ELSE m.recipient_staff_id END = ? 
-             AND m.sender_type = ? AND 
-             CASE WHEN m.sender_type = 'user' THEN m.sender_user_id ELSE m.sender_staff_id END = ?)
-        )
-        ORDER BY m.created_at ASC
-    ");
+    // If user is viewing messages with staff, treat other_id as office_id
+    // Show all messages from any staff in that office
+    if ($currentType === 'user' && $otherType === 'staff') {
+        $stmt = $pdo->prepare("
+            SELECT 
+                m.message_id,
+                m.sender_type,
+                m.sender_user_id,
+                m.sender_staff_id,
+                m.recipient_type,
+                m.recipient_user_id,
+                m.recipient_staff_id,
+                m.message,
+                m.is_read,
+                m.created_at,
+                CASE 
+                    WHEN m.sender_type = 'user' THEN u.first_name || ' ' || u.last_name
+                    WHEN m.sender_type = 'staff' THEN 
+                        COALESCE(o.office_name, s.office_name, 'Staff Office')
+                END as sender_name
+            FROM public.messages m
+            LEFT JOIN public.users u ON m.sender_user_id = u.user_id
+            LEFT JOIN public.staff s ON m.sender_staff_id = s.staff_id
+            LEFT JOIN public.offices o ON s.office_id = o.office_id
+            WHERE (
+                (m.sender_type = 'user' AND m.sender_user_id = ? 
+                 AND m.recipient_type = 'staff' 
+                 AND COALESCE(o.office_id, s.office_id) = ?)
+                OR
+                (m.recipient_type = 'user' AND m.recipient_user_id = ? 
+                 AND m.sender_type = 'staff'
+                 AND COALESCE(o.office_id, s.office_id) = ?)
+            )
+            ORDER BY m.created_at ASC
+        ");
+        $params = [$currentId, $otherId, $currentId, $otherId];
+    } else {
+        // Staff to user or other combinations - use original logic
+        $stmt = $pdo->prepare("
+            SELECT 
+                m.message_id,
+                m.sender_type,
+                m.sender_user_id,
+                m.sender_staff_id,
+                m.recipient_type,
+                m.recipient_user_id,
+                m.recipient_staff_id,
+                m.message,
+                m.is_read,
+                m.created_at,
+                CASE 
+                    WHEN m.sender_type = 'user' THEN u.first_name || ' ' || u.last_name
+                    WHEN m.sender_type = 'staff' THEN 
+                        CASE 
+                            WHEN o.office_name IS NOT NULL THEN o.office_name
+                            WHEN s.office_name IS NOT NULL THEN s.office_name
+                            ELSE 'Staff Office'
+                        END
+                END as sender_name
+            FROM public.messages m
+            LEFT JOIN public.users u ON m.sender_user_id = u.user_id
+            LEFT JOIN public.staff s ON m.sender_staff_id = s.staff_id
+            LEFT JOIN public.offices o ON s.office_id = o.office_id
+            WHERE (
+                (m.sender_type = ? AND 
+                 CASE WHEN m.sender_type = 'user' THEN m.sender_user_id ELSE m.sender_staff_id END = ? 
+                 AND m.recipient_type = ? AND 
+                 CASE WHEN m.recipient_type = 'user' THEN m.recipient_user_id ELSE m.recipient_staff_id END = ?)
+                OR
+                (m.recipient_type = ? AND 
+                 CASE WHEN m.recipient_type = 'user' THEN m.recipient_user_id ELSE m.recipient_staff_id END = ? 
+                 AND m.sender_type = ? AND 
+                 CASE WHEN m.sender_type = 'user' THEN m.sender_user_id ELSE m.sender_staff_id END = ?)
+            )
+            ORDER BY m.created_at ASC
+        ");
+        $params = [$currentType, $currentId, $otherType, $otherId, $currentType, $currentId, $otherType, $otherId];
+    }
 
-    $stmt->execute([
-        $currentType, $currentId, $otherType, $otherId,
-        $currentType, $currentId, $otherType, $otherId
-    ]);
+    $stmt->execute($params);
 
     $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Mark messages as read if current user is recipient
-    if (!empty($messages)) {
+    if (!empty($messages) && $currentType === 'user' && $otherType === 'staff') {
+        // Mark all unread messages from this office as read
+        $updateStmt = $pdo->prepare("
+            UPDATE public.messages m
+            SET is_read = TRUE
+            FROM public.staff s
+            LEFT JOIN public.offices o ON s.office_id = o.office_id
+            WHERE m.recipient_type = 'user' 
+            AND m.recipient_user_id = ?
+            AND m.sender_type = 'staff'
+            AND m.sender_staff_id = s.staff_id
+            AND COALESCE(o.office_id, s.office_id) = ?
+            AND m.is_read = FALSE
+        ");
+        $updateStmt->execute([$currentId, $otherId]);
+    } elseif (!empty($messages)) {
         $updateStmt = $pdo->prepare("
             UPDATE public.messages
             SET is_read = TRUE

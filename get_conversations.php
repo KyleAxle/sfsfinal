@@ -26,78 +26,102 @@ try {
 
     $otherType = $currentType === 'user' ? 'staff' : 'user';
 
-    // Get distinct conversations with latest message info using a simpler approach
-    $stmt = $pdo->prepare("
-        WITH conversation_messages AS (
-            SELECT 
-                CASE 
-                    WHEN m.sender_type = ? THEN 
-                        CASE WHEN m.sender_type = 'user' THEN m.sender_user_id ELSE m.sender_staff_id END
-                    ELSE 
-                        CASE WHEN m.recipient_type = 'user' THEN m.recipient_user_id ELSE m.recipient_staff_id END
-                END as other_id,
-                CASE 
-                    WHEN m.sender_type = ? THEN m.sender_type
-                    ELSE m.recipient_type
-                END as other_type,
-                m.message,
-                m.created_at,
-                m.is_read,
-                ROW_NUMBER() OVER (
-                    PARTITION BY 
-                        CASE 
-                            WHEN m.sender_type = ? THEN 
-                                CASE WHEN m.sender_type = 'user' THEN m.sender_user_id ELSE m.sender_staff_id END
-                            ELSE 
-                                CASE WHEN m.recipient_type = 'user' THEN m.recipient_user_id ELSE m.recipient_staff_id END
-                        END
-                    ORDER BY m.created_at DESC
-                ) as rn
-            FROM public.messages m
-            WHERE (
-                (m.sender_type = ? AND 
-                 CASE WHEN m.sender_type = 'user' THEN m.sender_user_id ELSE m.sender_staff_id END = ?)
-                OR
-                (m.recipient_type = ? AND 
-                 CASE WHEN m.recipient_type = 'user' THEN m.recipient_user_id ELSE m.recipient_staff_id END = ?)
+    // Get distinct conversations grouped by OFFICE (not by staff)
+    // This ensures all messages from the same office appear as one conversation
+    if ($currentType === 'user') {
+        $stmt = $pdo->prepare("
+            WITH office_messages AS (
+                SELECT 
+                    COALESCE(o.office_id, s.office_id) as office_id,
+                    COALESCE(o.office_name, s.office_name, 'Staff Office') as office_name,
+                    m.message,
+                    m.created_at,
+                    m.is_read,
+                    m.sender_staff_id,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY COALESCE(o.office_id, s.office_id)
+                        ORDER BY m.created_at DESC
+                    ) as rn
+                FROM public.messages m
+                LEFT JOIN public.staff s ON m.sender_staff_id = s.staff_id OR m.recipient_staff_id = s.staff_id
+                LEFT JOIN public.offices o ON s.office_id = o.office_id
+                WHERE (
+                    (m.sender_type = 'staff' AND m.recipient_type = 'user' AND m.recipient_user_id = ?)
+                    OR
+                    (m.sender_type = 'user' AND m.sender_user_id = ? AND m.recipient_type = 'staff')
+                )
+                AND COALESCE(o.office_id, s.office_id) IS NOT NULL
             )
-        )
-        SELECT 
-            cm.other_id,
-            cm.other_type,
-            cm.message as last_message,
-            cm.created_at as last_message_time,
-            cm.is_read,
-            CASE 
-                WHEN cm.other_type = 'user' THEN u.first_name || ' ' || u.last_name
-                WHEN cm.other_type = 'staff' THEN 
+            SELECT 
+                om.office_id as other_id,
+                'staff' as other_type,
+                om.message as last_message,
+                om.created_at as last_message_time,
+                om.is_read,
+                om.office_name as other_name,
+                (SELECT COUNT(*) FROM public.messages m2
+                 LEFT JOIN public.staff s2 ON m2.sender_staff_id = s2.staff_id
+                 LEFT JOIN public.offices o2 ON s2.office_id = o2.office_id
+                 WHERE m2.recipient_type = 'user' 
+                 AND m2.recipient_user_id = ?
+                 AND m2.sender_type = 'staff'
+                 AND COALESCE(o2.office_id, s2.office_id) = om.office_id
+                 AND m2.is_read = FALSE) as unread_count
+            FROM office_messages om
+            WHERE om.rn = 1
+            ORDER BY om.created_at DESC
+        ");
+        $params = [$currentId, $currentId, $currentId];
+    } else {
+        // Staff viewing conversations with users (keep original logic)
+        $stmt = $pdo->prepare("
+            WITH conversation_messages AS (
+                SELECT 
                     CASE 
-                        WHEN o.office_name IS NOT NULL THEN o.office_name
-                        WHEN s.office_name IS NOT NULL THEN s.office_name
-                        ELSE 'Staff Office'
-                    END
-                ELSE 'Unknown'
-            END as other_name,
-            (SELECT COUNT(*) FROM public.messages m2 
-             WHERE m2.recipient_type = ? 
-             AND CASE WHEN m2.recipient_type = 'user' THEN m2.recipient_user_id ELSE m2.recipient_staff_id END = ?
-             AND m2.sender_type = cm.other_type
-             AND CASE WHEN m2.sender_type = 'user' THEN m2.sender_user_id ELSE m2.sender_staff_id END = cm.other_id
-             AND m2.is_read = FALSE) as unread_count
-        FROM conversation_messages cm
-        LEFT JOIN public.users u ON cm.other_type = 'user' AND cm.other_id = u.user_id
-        LEFT JOIN public.staff s ON cm.other_type = 'staff' AND cm.other_id = s.staff_id
-        LEFT JOIN public.offices o ON s.office_id = o.office_id
-        WHERE cm.rn = 1
-        ORDER BY cm.created_at DESC
-    ");
+                        WHEN m.sender_type = 'staff' THEN m.recipient_user_id
+                        ELSE m.sender_user_id
+                    END as other_id,
+                    'user' as other_type,
+                    m.message,
+                    m.created_at,
+                    m.is_read,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY 
+                            CASE 
+                                WHEN m.sender_type = 'staff' THEN m.recipient_user_id
+                                ELSE m.sender_user_id
+                            END
+                        ORDER BY m.created_at DESC
+                    ) as rn
+                FROM public.messages m
+                WHERE (
+                    (m.sender_type = 'staff' AND m.sender_staff_id = ?)
+                    OR
+                    (m.recipient_type = 'staff' AND m.recipient_staff_id = ?)
+                )
+            )
+            SELECT 
+                cm.other_id,
+                cm.other_type,
+                cm.message as last_message,
+                cm.created_at as last_message_time,
+                cm.is_read,
+                u.first_name || ' ' || u.last_name as other_name,
+                (SELECT COUNT(*) FROM public.messages m2 
+                 WHERE m2.recipient_type = 'staff' 
+                 AND m2.recipient_staff_id = ?
+                 AND m2.sender_type = 'user'
+                 AND m2.sender_user_id = cm.other_id
+                 AND m2.is_read = FALSE) as unread_count
+            FROM conversation_messages cm
+            LEFT JOIN public.users u ON cm.other_id = u.user_id
+            WHERE cm.rn = 1
+            ORDER BY cm.created_at DESC
+        ");
+        $params = [$currentId, $currentId, $currentId];
+    }
 
-    $stmt->execute([
-        $currentType, $currentType, $currentType,
-        $currentType, $currentId,
-        $currentType, $currentId,
-        $currentType, $currentId
-    ]);
+    $stmt->execute($params);
 
     $conversations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
