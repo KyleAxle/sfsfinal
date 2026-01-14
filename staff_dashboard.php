@@ -388,11 +388,13 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 				updateSummaries();
 				renderAppointments();
 				
-				// Show success popup if appointment was accepted and SMS was sent
-				if ((status === 'approved' || status === 'accepted') && data.sms_sent) {
-					alert('Appointment accepted! SMS notification has been sent to the user.');
-				} else if ((status === 'approved' || status === 'accepted') && data.sms_sent === false) {
-					alert('Appointment accepted! Note: SMS notification could not be sent (user may not have a phone number).');
+				// Show success popup if appointment was accepted
+				if (status === 'approved' || status === 'accepted') {
+					if (data.sms_sent === true) {
+						alert('Appointment accepted! SMS notification has been sent to the user.');
+					} else {
+						alert('Appointment accepted!');
+					}
 				}
 			} catch (err) {
 				console.error('Update status error:', err);
