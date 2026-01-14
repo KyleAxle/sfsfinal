@@ -9,7 +9,7 @@ loadEnv(__DIR__ . '/.env');
 
 // SMS API Configuration
 define('SMS_API_TOKEN', getenv('SMS_API_TOKEN') ?: '331a374186640304a6ffa890f60f3f5ec550d702');
-define('SMS_API_URL', 'https://sms.iprogtech.com/api/v1/sms_messages');
+define('SMS_API_URL', 'https://www.iprogsms.com/api/v1/sms_messages');
 
 // SMS Template Configuration
 // These will be automatically prepended (header) and appended (footer) to all SMS messages
