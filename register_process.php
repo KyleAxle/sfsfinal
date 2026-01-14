@@ -68,6 +68,8 @@ $email = trim($_POST['email'] ?? '');
 $phone = trim($_POST['phone'] ?? '');
 $password = $_POST['password'] ?? '';
 $confirm_password = $_POST['confirm_password'] ?? '';
+$date_of_birth = trim($_POST['dob'] ?? ''); // Registration form uses 'dob' field name
+$age = isset($_POST['age']) && $_POST['age'] !== '' ? (int)$_POST['age'] : null;
 
 // Validation
 if (empty($first_name) || empty($last_name) || empty($email) || empty($password)) {
@@ -151,26 +153,39 @@ try {
 
     // Insert new user into Supabase (explicitly use public.users schema)
     // Schema uses password_hash column (not password) and includes phone column
-    // Check if phone column exists before including it
-    $checkPhoneColumn = $pdo->query("
+    // Check which columns exist before including them
+    $columns = $pdo->query("
         SELECT column_name 
         FROM information_schema.columns 
         WHERE table_schema = 'public' 
-        AND table_name = 'users' 
-        AND column_name = 'phone'
-    ")->fetch();
+        AND table_name = 'users'
+    ")->fetchAll(PDO::FETCH_COLUMN);
     
-    if ($checkPhoneColumn) {
-        // Phone column exists, include it in INSERT
-        $stmt = $pdo->prepare("INSERT INTO public.users (first_name, last_name, email, password_hash, phone) VALUES (?, ?, ?, ?, ?)");
-        $result = $stmt->execute([$first_name, $last_name, $email, $hashed_password, $phone ?: null]);
-        error_log("Registration attempt: email=$email, first_name=$first_name, last_name=$last_name, phone=" . ($phone ?: 'none'));
-    } else {
-        // Phone column doesn't exist, insert without it
-        $stmt = $pdo->prepare("INSERT INTO public.users (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)");
-        $result = $stmt->execute([$first_name, $last_name, $email, $hashed_password]);
-        error_log("Registration attempt: email=$email, first_name=$first_name, last_name=$last_name (phone column not available)");
+    // Build INSERT query dynamically based on available columns
+    $insertFields = ['first_name', 'last_name', 'email', 'password_hash'];
+    $insertValues = [$first_name, $last_name, $email, $hashed_password];
+    
+    if (in_array('phone', $columns)) {
+        $insertFields[] = 'phone';
+        $insertValues[] = $phone ?: null;
     }
+    
+    if (in_array('date_of_birth', $columns) && !empty($date_of_birth)) {
+        $insertFields[] = 'date_of_birth';
+        $insertValues[] = $date_of_birth;
+    }
+    
+    if (in_array('age', $columns) && $age !== null) {
+        $insertFields[] = 'age';
+        $insertValues[] = $age;
+    }
+    
+    $placeholders = implode(', ', array_fill(0, count($insertFields), '?'));
+    $sql = "INSERT INTO public.users (" . implode(', ', $insertFields) . ") VALUES ($placeholders)";
+    $stmt = $pdo->prepare($sql);
+    $result = $stmt->execute($insertValues);
+    
+    error_log("Registration attempt: email=$email, first_name=$first_name, last_name=$last_name, phone=" . ($phone ?: 'none') . ", dob=" . ($date_of_birth ?: 'none') . ", age=" . ($age !== null ? $age : 'none'));
     $rowCount = $stmt->rowCount();
     
     error_log("Registration INSERT result: " . ($result ? 'true' : 'false') . ", rowCount: $rowCount");
