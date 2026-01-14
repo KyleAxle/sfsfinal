@@ -24,30 +24,16 @@ define('SMS_HEADER_TEXT', getenv('SMS_HEADER_TEXT') ?: 'SFS Appointment System')
 define('SMS_FOOTER_TEXT', getenv('SMS_FOOTER_TEXT') ?: '');
 
 /**
- * Format SMS message with header and footer template
+ * Format SMS message
+ * 
+ * Note: iprogsms.com automatically adds header and footer from your account settings.
+ * We don't add them here to avoid duplication.
  * 
  * @param string $messageContent The main message content
- * @return string Formatted message with header and footer
+ * @return string Formatted message (header/footer added automatically by iprogsms.com)
  */
 function formatSMSMessage($messageContent) {
-	$header = SMS_HEADER_TEXT;
-	$footer = SMS_FOOTER_TEXT;
-	
-	// Build the message with template
-	$formattedMessage = '';
-	
-	// Add header if set
-	if (!empty($header)) {
-		$formattedMessage .= $header . "\n\n";
-	}
-	
-	// Add main message content
-	$formattedMessage .= trim($messageContent);
-	
-	// Add footer if set
-	if (!empty($footer)) {
-		$formattedMessage .= "\n\n" . $footer;
-	}
-	
-	return trim($formattedMessage);
+	// iprogsms.com automatically adds header/footer from account settings
+	// So we just return the message content as-is to avoid duplication
+	return trim($messageContent);
 }
