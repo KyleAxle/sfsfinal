@@ -8,7 +8,7 @@ loadEnv(dirname(__DIR__) . '/.env');
 loadEnv(__DIR__ . '/.env');
 
 // SMS API Configuration
-define('SMS_API_TOKEN', getenv('SMS_API_TOKEN') ?: 'dadd747dcc588f49217a6d239d9ddf6a81a6e91b');
+define('SMS_API_TOKEN', getenv('SMS_API_TOKEN') ?: '331a374186640304a6ffa890f60f3f5ec550d702');
 define('SMS_API_URL', 'https://sms.iprogtech.com/api/v1/sms_messages');
 
 // SMS Template Configuration
