@@ -2,6 +2,8 @@
 // send_sms.php
 session_start();
 
+// Load SMS configuration
+require_once __DIR__ . '/config/sms.php';
 
 header('Content-Type: application/json');
 
@@ -9,9 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Invalid request method']);
     exit;
 }
-
-// Insert your API token here
-$api_token = 'dadd747dcc588f49217a6d239d9ddf6a81a6e91b';
 
 $phone_number = $_POST['phone_number'] ?? '';
 $message = $_POST['message'] ?? '';
@@ -21,15 +20,16 @@ if (!$phone_number || !$message) {
     exit;
 }
 
-$url = 'https://sms.iprogtech.com/api/v1/sms_messages';
+// Format message with header and footer template
+$formattedMessage = formatSMSMessage($message);
 
 $data = [
-    'api_token' => $api_token,
-    'message' => $message,
+    'api_token' => SMS_API_TOKEN,
+    'message' => $formattedMessage,
     'phone_number' => $phone_number
 ];
 
-$ch = curl_init($url);
+$ch = curl_init(SMS_API_URL);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_POST, true);
 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));

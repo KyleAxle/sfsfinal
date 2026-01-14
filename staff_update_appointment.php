@@ -48,6 +48,9 @@ try {
 	exit;
 }
 
+// Load SMS configuration
+require_once __DIR__ . '/config/sms.php';
+
 $officeId = (int)$_SESSION['office_id'];
 
 /**
@@ -89,28 +92,28 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 	$timeObj = DateTime::createFromFormat('H:i:s', $appointmentTime);
 	$formattedTime = $timeObj ? $timeObj->format('g:i A') : $appointmentTime;
 	
-	// Generate SMS message
-	$message = "Hello" . ($userName ? " {$userName}" : "") . "! Your appointment at {$officeName} has been ACCEPTED. ";
-	$message .= "Date: {$formattedDate} at {$formattedTime}. ";
+	// Generate SMS message content (without header/footer - will be added by formatSMSMessage)
+	$messageContent = "Hello" . ($userName ? " {$userName}" : "") . "! Your appointment at {$officeName} has been ACCEPTED. ";
+	$messageContent .= "Date: {$formattedDate} at {$formattedTime}. ";
 	
 	// Add staff message if provided
 	if (!empty($staffMessage)) {
-		$message .= "Note: {$staffMessage} ";
+		$messageContent .= "Note: {$staffMessage} ";
 	}
 	
-	$message .= "Please arrive on time. Thank you!";
+	$messageContent .= "Please arrive on time. Thank you!";
 	
-	// Use the same SMS API configuration as send_sms.php
-	$api_token = '331a374186640304a6ffa890f60f3f5ec550d702';
-	$url = 'https://sms.iprogtech.com/api/v1/sms_messages';
+	// Format message with header and footer template
+	$formattedMessage = formatSMSMessage($messageContent);
 	
+	// Use the centralized SMS API configuration
 	$data = [
-		'api_token' => $api_token,
-		'message' => $message,
+		'api_token' => SMS_API_TOKEN,
+		'message' => $formattedMessage,
 		'phone_number' => $phoneNumber
 	];
 	
-	$ch = curl_init($url);
+	$ch = curl_init(SMS_API_URL);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_POST, true);
 	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
