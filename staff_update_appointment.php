@@ -113,36 +113,53 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 		'phone_number' => $phoneNumber
 	];
 	
+	error_log('SMS API Request - URL: ' . SMS_API_URL);
+	error_log('SMS API Request - Data: ' . json_encode($data));
+	
 	$ch = curl_init(SMS_API_URL);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_POST, true);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); // Send as JSON
 	curl_setopt($ch, CURLOPT_HTTPHEADER, [
-		'Content-Type: application/x-www-form-urlencoded'
+		'Content-Type: application/json' // Changed to JSON
 	]);
+	curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 	
 	$response = curl_exec($ch);
 	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	$curlError = curl_error($ch);
 	curl_close($ch);
 	
+	error_log('SMS API Response - HTTP Code: ' . $httpCode);
+	error_log('SMS API Response - Body: ' . $response);
+	
 	if ($curlError) {
 		error_log('SMS sending error for appointment ID ' . $appointmentData['appointment_id'] . ': ' . $curlError);
 		return false;
 	}
 	
+	// Check if we got a valid HTTP response
+	if ($httpCode !== 200) {
+		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': HTTP ' . $httpCode . ' - ' . $response);
+		return false;
+	}
+	
+	// Parse JSON response
 	$result = json_decode($response, true);
-	if (json_last_error() === JSON_ERROR_NONE && is_array($result)) {
-		$success = (isset($result['status']) && $result['status'] == 200) || $httpCode == 200;
-		if ($success) {
-			error_log('SMS notification sent successfully to ' . $phoneNumber . ' for appointment ID ' . $appointmentData['appointment_id']);
-			return true;
-		} else {
-			error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': ' . ($result['error'] ?? 'API returned error'));
-			return false;
-		}
+	
+	if (json_last_error() !== JSON_ERROR_NONE || !is_array($result)) {
+		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': Invalid JSON response - ' . substr($response, 0, 200));
+		return false;
+	}
+	
+	// Check for success - API returns status: 200 on success
+	if (isset($result['status']) && $result['status'] == 200) {
+		error_log('SMS notification sent successfully to ' . $phoneNumber . ' for appointment ID ' . $appointmentData['appointment_id'] . ' - Message ID: ' . ($result['message_id'] ?? 'N/A'));
+		return true;
 	} else {
-		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': Invalid response from SMS API');
+		$errorMsg = $result['message'] ?? $result['error'] ?? 'API returned error';
+		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': ' . $errorMsg);
 		return false;
 	}
 }
