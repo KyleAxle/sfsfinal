@@ -391,13 +391,11 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 				// Show success popup if appointment was accepted
 				if (status === 'approved' || status === 'accepted') {
 					// Only show SMS message if SMS was actually sent successfully
+					// Check explicitly for true (not just truthy)
 					if (data.sms_sent === true) {
 						alert('Appointment accepted! SMS notification has been sent to the user.');
-					} else if (data.sms_sent === false || data.sms_sent === undefined) {
-						// SMS was not sent (no phone number, API error, etc.)
-						alert('Appointment accepted!');
 					} else {
-						// Fallback for any other case
+						// SMS was not sent (no phone number, API error, or sms_sent is false/undefined)
 						alert('Appointment accepted!');
 					}
 				}
