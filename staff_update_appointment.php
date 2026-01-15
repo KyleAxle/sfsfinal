@@ -203,29 +203,41 @@ $smsError = null;
 try {
 	$pdo->beginTransaction();
 
+	// Update appointments table status
 	$update = $pdo->prepare("update appointments set status = ?::appointment_status, updated_at = now() where appointment_id = ?");
 	$update->execute([$dbStatus, $appointmentId]);
 
-$officeStatus = $dbStatus === 'accepted' ? 'approved' : $dbStatus;
+	// For office_assignment_status, only update if status is not 'completed'
+	// The office_assignment_status ENUM typically doesn't include 'completed'
+	// So we keep the existing status for completed appointments
+	if ($dbStatus === 'completed') {
+		// When marking as completed, don't update appointment_offices status
+		// Just update the updated_at timestamp
+		$updateAo = $pdo->prepare("update appointment_offices set updated_at = now() where appointment_id = ? and office_id = ?");
+		$updateAo->execute([$appointmentId, $officeId]);
+	} else {
+		// For other statuses, update the office_assignment_status
+		$officeStatus = $dbStatus === 'accepted' ? 'approved' : $dbStatus;
+		
+		// Check if staff_message column exists before updating
+		$checkColumn = $pdo->query("
+			SELECT column_name 
+			FROM information_schema.columns 
+			WHERE table_schema = 'public' 
+			AND table_name = 'appointment_offices' 
+			AND column_name = 'staff_message'
+		")->fetch();
 
-// Check if staff_message column exists before updating
-$checkColumn = $pdo->query("
-    SELECT column_name 
-    FROM information_schema.columns 
-    WHERE table_schema = 'public' 
-    AND table_name = 'appointment_offices' 
-    AND column_name = 'staff_message'
-")->fetch();
-
-if ($checkColumn) {
-    // Column exists, update with message
-    $updateAo = $pdo->prepare("update appointment_offices set status = ?::office_assignment_status, staff_message = ?, updated_at = now() where appointment_id = ? and office_id = ?");
-    $updateAo->execute([$officeStatus, $staffMessage ?: null, $appointmentId, $officeId]);
-} else {
-    // Column doesn't exist, update without message
-    $updateAo = $pdo->prepare("update appointment_offices set status = ?::office_assignment_status, updated_at = now() where appointment_id = ? and office_id = ?");
-    $updateAo->execute([$officeStatus, $appointmentId, $officeId]);
-}
+		if ($checkColumn) {
+			// Column exists, update with message
+			$updateAo = $pdo->prepare("update appointment_offices set status = ?::office_assignment_status, staff_message = ?, updated_at = now() where appointment_id = ? and office_id = ?");
+			$updateAo->execute([$officeStatus, $staffMessage ?: null, $appointmentId, $officeId]);
+		} else {
+			// Column doesn't exist, update without message
+			$updateAo = $pdo->prepare("update appointment_offices set status = ?::office_assignment_status, updated_at = now() where appointment_id = ? and office_id = ?");
+			$updateAo->execute([$officeStatus, $appointmentId, $officeId]);
+		}
+	}
 
 	$pdo->commit();
 	
