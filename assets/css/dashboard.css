@@ -27,7 +27,7 @@ body {
 	width: min(1280px, 100%);
 	min-height: calc(100vh - 32px);
 	background: #fff;
-	border-radius: 18px;
+	border-radius: 20px;
 	overflow: visible;
 	display: flex;
 	box-shadow: 0 25px 60px rgba(15, 23, 42, 0.15);
@@ -96,7 +96,7 @@ body {
 	background: var(--primary);
 	color: #fff;
 	padding: 20px 24px;
-	border-radius: 18px;
+	border-radius: 20px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
