@@ -268,10 +268,6 @@ $userEmail = $user['email'] ?? '';
 			border-color: #ffd700;
 			color: #fff;
 		}
-		.star-btn.active ~ .star-btn {
-			background: #fff;
-			border-color: #e5e7eb;
-		}
 		.submit-btn {
 			border: none;
 			border-radius: 999px;
@@ -452,11 +448,17 @@ $userEmail = $user['email'] ?? '';
 				const rating = parseInt(this.getAttribute('data-rating'));
 				ratingInput.value = rating;
 				
+				// Remove active class from all stars first
+				starButtons.forEach(star => {
+					star.classList.remove('active');
+				});
+				
+				// Add active class to all stars up to and including the clicked one
 				starButtons.forEach((star, index) => {
+					// index is 0-based, rating is 1-based
+					// So if rating is 3, we want to highlight stars at index 0, 1, 2 (1st, 2nd, 3rd)
 					if (index < rating) {
 						star.classList.add('active');
-					} else {
-						star.classList.remove('active');
 					}
 				});
 			});
