@@ -502,6 +502,8 @@
 
         document.getElementById('appointmentForm').addEventListener('submit', (event) => {
             event.preventDefault();
+            console.log('📝 Appointment form submitted');
+            
             const payload = new URLSearchParams({
                 office_id: officeIdInput.value,
                 paperType: paperTypeSelect.value,
@@ -512,33 +514,55 @@
                 appointment_time: timeSelect.value
             });
 
+            console.log('📤 Sending appointment request:', {
+                office_id: officeIdInput.value,
+                office_name: officeNameInput.value,
+                appointment_date: appointmentDateInput.value,
+                appointment_time: timeSelect.value
+            });
+
             fetch('save_appointment.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: payload.toString(),
                 credentials: 'same-origin'
             })
-                .then(res => res.text())
+                .then(res => {
+                    console.log('📥 Response received:', {
+                        status: res.status,
+                        statusText: res.statusText,
+                        ok: res.ok
+                    });
+                    return res.text();
+                })
                 .then(result => {
+                    console.log('📋 Response body:', result);
                     const trimmed = result.trim();
                     if (trimmed.startsWith('error:')) {
+                        console.error('❌ Error:', trimmed.substring(6));
                         alert(trimmed.substring(6));
                         return;
                     }
                     if (trimmed === 'duplicate') {
+                        console.warn('⚠️ Duplicate appointment detected');
                         alert('You already have an appointment during that slot. Please choose another time.');
                         return;
                     }
                     if (trimmed === 'success') {
+                        console.log('✅ Appointment booked successfully!');
                         alert('Appointment booked successfully!');
                         const currentOffice = officeNameInput.value;
                         event.target.reset();
                         setOffice(currentOffice || 'Deans Office');
                     } else {
+                        console.error('❌ Unexpected response:', trimmed);
                         alert('Failed to book appointment. Please try again.');
                     }
                 })
-                .catch(() => alert('Failed to book appointment. Please try again.'));
+                .catch(error => {
+                    console.error('❌ Network error:', error);
+                    alert('Failed to book appointment. Please try again.');
+                });
         });
 
         logoutBtn.addEventListener('click', () => {
