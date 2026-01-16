@@ -18,8 +18,7 @@ $officeId = (int)$_SESSION['office_id'];
 
 try {
     // Get appointments with SMS notification status
-    // We'll track this by checking appointment status changes and SMS logs if available
-    // For now, we'll show appointments that were approved/completed with their details
+    // Show all appointments (we'll filter by status in PHP to avoid enum issues)
     $stmt = $pdo->prepare("
         SELECT 
             a.appointment_id,
@@ -35,13 +34,19 @@ try {
         INNER JOIN public.appointment_offices ao ON a.appointment_id = ao.appointment_id
         INNER JOIN public.users u ON a.user_id = u.user_id
         WHERE ao.office_id = ?
-        AND a.status IN ('approved', 'accepted', 'completed')
         ORDER BY a.updated_at DESC
         LIMIT 50
     ");
     
     $stmt->execute([$officeId]);
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Filter appointments that are not pending (normalize status first)
+    $filteredAppointments = array_filter($appointments, function($apt) {
+        $status = strtolower($apt['status'] ?? '');
+        // Include appointments that are approved, accepted, completed, declined, rejected
+        return !in_array($status, ['pending', '']);
+    });
     
     // Format as notifications
     $notifications = array_map(function($apt) {
@@ -58,7 +63,7 @@ try {
             'sms_sent' => !empty($apt['phone']), // Assume SMS was sent if phone exists
             'sms_error' => empty($apt['phone']) ? 'No phone number on file' : null
         ];
-    }, $appointments);
+    }, $filteredAppointments);
     
     echo json_encode([
         'success' => true,
