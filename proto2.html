@@ -381,7 +381,9 @@
                 return;
             }
             try {
-                const res = await fetch(`get_booked_slots.php?office_id=${encodeURIComponent(officeId)}&date=${encodeURIComponent(date)}`);
+                const res = await fetch(`get_booked_slots.php?office_id=${encodeURIComponent(officeId)}&date=${encodeURIComponent(date)}`, {
+                    credentials: 'same-origin'
+                });
                 if (!res.ok) throw new Error('Network error');
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
@@ -440,7 +442,9 @@
 
         async function loadOffices() {
             try {
-                const res = await fetch('get_offices.php');
+                const res = await fetch('get_offices.php', {
+                    credentials: 'same-origin'
+                });
                 if (!res.ok) throw new Error('Failed to load offices');
                 const data = await res.json();
                 if (data.error) throw new Error(data.error);
@@ -511,7 +515,8 @@
             fetch('save_appointment.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: payload.toString()
+                body: payload.toString(),
+                credentials: 'same-origin'
             })
                 .then(res => res.text())
                 .then(result => {
@@ -537,13 +542,15 @@
         });
 
         logoutBtn.addEventListener('click', () => {
-            fetch('logout.php', { method: 'POST' }).finally(() => {
+            fetch('logout.php', { method: 'POST', credentials: 'same-origin' }).finally(() => {
                 window.location.href = 'login.html';
             });
         });
 
         function loadProfile() {
-            fetch('profile_info.php')
+            fetch('profile_info.php', {
+                credentials: 'same-origin'
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
@@ -680,6 +687,7 @@
                 fetch('ai_chat.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         message: message,
                         history: conversationHistory

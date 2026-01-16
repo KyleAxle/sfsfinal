@@ -230,7 +230,7 @@
 		const removePictureBtn = document.getElementById('removePictureBtn');
 
 		logoutBtn.addEventListener('click', () => {
-			fetch('logout.php', { method: 'POST' }).finally(() => {
+			fetch('logout.php', { method: 'POST', credentials: 'same-origin' }).finally(() => {
 				window.location.href = 'login.html';
 			});
 		});
@@ -318,7 +318,9 @@
 
 		async function loadProfile() {
 			try {
-				const res = await fetch('profile_info.php');
+				const res = await fetch('profile_info.php', {
+					credentials: 'same-origin'
+				});
 				const data = await res.json();
 				
 				if (data.success) {

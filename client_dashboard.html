@@ -114,7 +114,9 @@
 
 		function fetchAppointments() {
 			appointmentsList.innerHTML = '<div class="loading-state">Loading appointments...</div>';
-			fetch('get_client_dashboard.php')
+			fetch('get_client_dashboard.php', {
+				credentials: 'same-origin'
+			})
 				.then(res => {
 					if (!res.ok) throw new Error('Network response was not ok');
 					return res.json();
