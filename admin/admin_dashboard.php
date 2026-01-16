@@ -136,7 +136,9 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             background: #fff;
             border-radius: 20px;
             padding: 24px;
+            padding-right: 28px;
             box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+            overflow: visible;
         }
         .filter-section {
             display: flex;
@@ -214,7 +216,7 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             border-radius: 12px;
             overflow-x: auto;
             overflow-y: visible;
-            padding: 0 12px 0 0;
+            padding: 0 20px 0 0;
         }
         .table thead {
             background: #f9fafb;
@@ -229,11 +231,11 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             padding: 12px 16px;
         }
         .table thead th:last-child {
-            width: 150px !important;
-            min-width: 150px !important;
+            width: 160px !important;
+            min-width: 160px !important;
             white-space: nowrap;
             text-align: center;
-            padding: 12px 16px 12px 8px;
+            padding: 12px 20px 12px 8px;
         }
         .table tbody td {
             padding: 12px 16px;
@@ -295,10 +297,10 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             background: #b91c1c;
         }
         .table tbody td:last-child {
-            width: 150px !important;
-            min-width: 150px !important;
+            width: 160px !important;
+            min-width: 160px !important;
             white-space: nowrap;
-            padding: 12px 16px 12px 8px;
+            padding: 12px 20px 12px 8px;
             text-align: center;
             overflow: visible;
         }
@@ -309,8 +311,8 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
         }
         .table tbody td:last-child form button {
             width: 100%;
-            min-width: 90px;
-            padding: 8px 12px;
+            min-width: 100px;
+            padding: 8px 16px;
             box-sizing: border-box;
         }
         .logout-btn {
