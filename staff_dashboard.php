@@ -363,23 +363,38 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 		}
 
 		async function updateStatus(id, status) {
+			console.log('📝 Updating appointment status:', { appointment_id: id, status });
+			
 			try {
 				const res = await fetch('staff_update_appointment.php', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: new URLSearchParams({ appointment_id: id, status })
+					body: new URLSearchParams({ appointment_id: id, status }),
+					credentials: 'same-origin'
+				});
+				
+				console.log('📥 Response received:', {
+					status: res.status,
+					statusText: res.statusText,
+					ok: res.ok,
+					contentType: res.headers.get('content-type')
 				});
 				
 				// Check if response is actually JSON
 				const contentType = res.headers.get('content-type');
 				if (!contentType || !contentType.includes('application/json')) {
 					const text = await res.text();
-					console.error('Non-JSON response:', text);
+					console.error('❌ Non-JSON response:', text);
 					throw new Error('Server returned invalid response. Please check the console.');
 				}
 				
 				const data = await res.json();
-				if (!data.success) throw new Error(data.error || 'Unable to update status');
+				console.log('📋 Response data:', data);
+				
+				if (!data.success) {
+					console.error('❌ Update failed:', data.error);
+					throw new Error(data.error || 'Unable to update status');
+				}
 				
 				const appt = appointments.find(a => Number(a.appointment_id) === Number(id));
 				if (appt) {
@@ -390,17 +405,28 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 				
 				// Show success popup if appointment was accepted
 				if (status === 'approved' || status === 'accepted') {
+					console.log('✅ Appointment accepted. SMS status:', {
+						sms_sent: data.sms_sent,
+						sms_error: data.sms_error || 'none'
+					});
+					
 					// Only show SMS message if SMS was actually sent successfully
 					// Check explicitly for true (not just truthy)
 					if (data.sms_sent === true) {
+						console.log('✅ SMS notification sent successfully!');
 						alert('Appointment accepted! SMS notification has been sent to the user.');
 					} else {
 						// SMS was not sent (no phone number, API error, or sms_sent is false/undefined)
-						alert('Appointment accepted!');
+						console.warn('⚠️ SMS was not sent:', data.sms_error || 'Unknown reason');
+						if (data.sms_error) {
+							alert('Appointment accepted! However, SMS could not be sent: ' + data.sms_error);
+						} else {
+							alert('Appointment accepted! (SMS notification was not sent - user may not have a phone number)');
+						}
 					}
 				}
 			} catch (err) {
-				console.error('Update status error:', err);
+				console.error('❌ Update status error:', err);
 				alert(err.message || 'An error occurred while updating the appointment.');
 			}
 		}

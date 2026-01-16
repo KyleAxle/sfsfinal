@@ -76,7 +76,28 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 		return false;
 	}
 	
-	error_log('SMS will be sent to phone: ' . $phoneNumber . ' for appointment ID ' . $appointmentData['appointment_id']);
+	// Format phone number to international format (+63) for Philippines
+	// Remove any spaces, dashes, or other characters
+	$phoneNumber = preg_replace('/[^0-9+]/', '', $phoneNumber);
+	
+	// If it starts with 0, replace with +63
+	if (preg_match('/^0/', $phoneNumber)) {
+		$phoneNumber = '+63' . substr($phoneNumber, 1);
+	}
+	// If it starts with 63 but no +, add +
+	elseif (preg_match('/^63/', $phoneNumber)) {
+		$phoneNumber = '+' . $phoneNumber;
+	}
+	// If it starts with 9 (local format), add +63
+	elseif (preg_match('/^9/', $phoneNumber)) {
+		$phoneNumber = '+63' . $phoneNumber;
+	}
+	// If it doesn't start with +, assume it's a local number and add +63
+	elseif (!preg_match('/^\+/', $phoneNumber)) {
+		$phoneNumber = '+63' . $phoneNumber;
+	}
+	
+	error_log('SMS will be sent to phone: ' . $phoneNumber . ' (formatted) for appointment ID ' . $appointmentData['appointment_id']);
 	
 	// Format appointment date and time
 	$appointmentDate = $appointmentData['appointment_date'];
@@ -160,7 +181,8 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 		return true;
 	} else {
 		$errorMsg = $result['message'] ?? $result['error'] ?? 'API returned error';
-		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': ' . $errorMsg);
+		$errorDetails = 'HTTP Code: ' . $httpCode . ', Response: ' . substr($response, 0, 500);
+		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': ' . $errorMsg . ' | ' . $errorDetails);
 		return false;
 	}
 }
@@ -244,10 +266,14 @@ try {
 	
 	// Send SMS notification if appointment is accepted/approved
 	if ($dbStatus === 'accepted' || $rawStatus === 'approved') {
+		error_log('Attempting to send SMS for appointment ID ' . $appointmentId);
 		// Send SMS in background (don't block the response)
 		$smsSent = sendAppointmentAcceptanceSMS($appointmentData, $staffMessage, $pdo);
 		if (!$smsSent) {
-			$smsError = 'SMS could not be sent (user may not have phone number)';
+			$smsError = 'SMS could not be sent (user may not have phone number or API error occurred)';
+			error_log('SMS sending failed for appointment ID ' . $appointmentId . ': ' . $smsError);
+		} else {
+			error_log('SMS sent successfully for appointment ID ' . $appointmentId);
 		}
 	}
 	
