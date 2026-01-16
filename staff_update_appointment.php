@@ -7,7 +7,7 @@ ini_set('log_errors', 1);
 // Start output buffering to catch any accidental output
 ob_start();
 
-session_start();
+require_once __DIR__ . '/config/session.php';
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

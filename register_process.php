@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 // Set content type to HTML so errors display properly
 header('Content-Type: text/html; charset=UTF-8');
 
-session_start();
+require_once __DIR__ . '/config/session.php';
 
 // Check if this is a POST request
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

@@ -4,7 +4,7 @@
  * GET: other_type, other_id
  */
 
-session_start();
+require_once __DIR__ . '/config/session.php';
 header('Content-Type: application/json');
 
 $pdo = require __DIR__ . '/config/db.php';

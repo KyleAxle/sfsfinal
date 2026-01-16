@@ -32,7 +32,7 @@ function returnSuccess($response, $source, $hasContext = false) {
     exit;
 }
 
-session_start();
+require_once __DIR__ . '/config/session.php';
 header('Content-Type: application/json');
 
 // Load environment variables (fail gracefully)

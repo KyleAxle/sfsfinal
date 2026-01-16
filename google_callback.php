@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/config/session.php';
 require_once __DIR__ . '/google-api-php-client/vendor/autoload.php';
 require_once __DIR__ . '/config/env.php';
 
@@ -59,7 +60,6 @@ if (isset($_GET['code'])) {
     $stmt = $pdo->prepare("SELECT user_id, first_name, last_name FROM public.users WHERE email = ?");
     $stmt->execute([$email]);
     if ($row = $stmt->fetch()) {
-        session_start();
         $_SESSION['user_id'] = $row['user_id'];
         $_SESSION['first_name'] = $row['first_name'];
         $_SESSION['last_name'] = $row['last_name'];

@@ -4,7 +4,7 @@
  * Returns appointments for the logged-in user
  */
 
-session_start();
+require_once __DIR__ . '/config/session.php';
 header('Content-Type: application/json');
 
 try {

@@ -4,7 +4,7 @@
  * Used by AI for auto-booking
  */
 
-session_start();
+require_once __DIR__ . '/config/session.php';
 header('Content-Type: application/json');
 
 $officeId = isset($_GET['office_id']) ? (int)$_GET['office_id'] : 0;

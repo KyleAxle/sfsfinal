@@ -1,6 +1,6 @@
 <?php
 // filepath: c:\xampp\htdocs\sfs\staff_login_process.php
-session_start();
+require_once __DIR__ . '/config/session.php';
 $pdo = require __DIR__ . '/config/db.php';
 
 $email = $_POST['email'];

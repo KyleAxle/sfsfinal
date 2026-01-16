@@ -7,7 +7,7 @@
  * For staff: counts unread messages from users
  */
 
-session_start();
+require_once __DIR__ . '/config/session.php';
 header('Content-Type: application/json');
 
 $pdo = require __DIR__ . '/config/db.php';

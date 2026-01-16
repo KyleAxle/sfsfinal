@@ -4,7 +4,7 @@
  * Allows AI to book appointments automatically for users
  */
 
-session_start();
+require_once __DIR__ . '/config/session.php';
 header('Content-Type: application/json');
 
 try {

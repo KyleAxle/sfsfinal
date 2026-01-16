@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/config/session.php';
 
 // Determine office from query or session
 $officeParam = isset($_GET['office']) ? strtolower(trim($_GET['office'])) : '';

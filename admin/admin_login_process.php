@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../config/session.php';
 
 // Database connection
 $pdo = require __DIR__ . '/../config/db.php';

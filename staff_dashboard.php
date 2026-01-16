@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/config/session.php';
 
 if (!isset($_SESSION['staff_id'], $_SESSION['office_id'])) {
 	header("Location: staff_login.html");

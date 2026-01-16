@@ -1,6 +1,6 @@
 <?php
 // send_sms.php
-session_start();
+require_once __DIR__ . '/config/session.php';
 
 // Load SMS configuration
 require_once __DIR__ . '/config/sms.php';
