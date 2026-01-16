@@ -227,8 +227,10 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             padding: 12px 16px;
         }
         .table thead th:last-child {
-            width: 1%;
+            width: auto;
+            min-width: 100px;
             white-space: nowrap;
+            text-align: center;
         }
         .table tbody td {
             padding: 12px 16px;
@@ -281,19 +283,28 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             font-size: 0.85rem;
             cursor: pointer;
             white-space: nowrap;
-            min-width: fit-content;
+            min-width: 80px;
+            width: auto;
+            display: inline-block;
+            box-sizing: border-box;
         }
         .btn-remove:hover {
             background: #b91c1c;
         }
         .table tbody td:last-child {
-            width: 1%;
+            width: auto;
+            min-width: 100px;
             white-space: nowrap;
             padding: 12px 16px;
+            text-align: center;
         }
         .table tbody td:last-child form {
             display: inline-block;
             margin: 0;
+            width: 100%;
+        }
+        .table tbody td:last-child form button {
+            width: 100%;
         }
         .logout-btn {
             margin-top: auto;
@@ -413,20 +424,6 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .admin-table tbody td:last-child {
-            text-align: right;
-            white-space: nowrap;
-            width: 1%;
-            padding: 12px 16px;
-        }
-        .admin-table tbody td:last-child form {
-            display: inline-block;
-            margin: 0;
-        }
-        .admin-table thead th:last-child {
-            width: 1%;
-            white-space: nowrap;
-        }
         .admin-table tbody td:nth-child(3),
         .admin-table tbody td:nth-child(4) {
             white-space: normal;
@@ -452,19 +449,34 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             background: #dc2626;
             color: #fff;
             white-space: nowrap;
-            min-width: fit-content;
+            min-width: 80px;
+            width: auto;
+            display: inline-block;
+            box-sizing: border-box;
         }
         .btn-remove:hover {
             background: #b91c1c;
         }
         .admin-table tbody td:last-child {
-            width: 1%;
+            text-align: center;
             white-space: nowrap;
+            width: auto;
+            min-width: 100px;
             padding: 12px 16px;
         }
         .admin-table tbody td:last-child form {
             display: inline-block;
             margin: 0;
+            width: 100%;
+        }
+        .admin-table tbody td:last-child form button {
+            width: 100%;
+        }
+        .admin-table thead th:last-child {
+            width: auto;
+            min-width: 100px;
+            white-space: nowrap;
+            text-align: center;
         }
         .btn-manage { background: var(--primary); color: #fff; padding: 10px 20px; border-radius: 24px; text-decoration: none; font-weight: 600; display: inline-block; }
         .panel {
