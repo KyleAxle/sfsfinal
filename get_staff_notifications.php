@@ -41,14 +41,7 @@ try {
     $stmt->execute([$officeId]);
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Filter appointments that are not pending (normalize status first)
-    $filteredAppointments = array_filter($appointments, function($apt) {
-        $status = strtolower($apt['status'] ?? '');
-        // Include appointments that are approved, accepted, completed, declined, rejected
-        return !in_array($status, ['pending', '']);
-    });
-    
-    // Format as notifications
+    // Format as notifications - show all appointments regardless of status
     $notifications = array_map(function($apt) {
         return [
             'appointment_id' => $apt['appointment_id'],
@@ -61,9 +54,10 @@ try {
             'phone' => $apt['phone'],
             'email' => $apt['email'],
             'sms_sent' => !empty($apt['phone']), // Assume SMS was sent if phone exists
+            'sms_sent' => !empty($apt['phone']), // Assume SMS was sent if phone exists
             'sms_error' => empty($apt['phone']) ? 'No phone number on file' : null
         ];
-    }, $filteredAppointments);
+    }, $appointments);
     
     echo json_encode([
         'success' => true,
