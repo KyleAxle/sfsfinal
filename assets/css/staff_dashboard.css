@@ -72,6 +72,11 @@ body {
 	background: rgba(255, 255, 255, 0.18);
 }
 
+.staff-sidebar nav a.active {
+	background: #fff;
+	color: var(--primary);
+}
+
 .logout-btn {
 	font-size: 0.95rem;
 	font-weight: 600;

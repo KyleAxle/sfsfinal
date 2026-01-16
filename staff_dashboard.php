@@ -101,7 +101,9 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 		<aside class="staff-sidebar">
 			<img src="img/cjclogo.png" alt="CJC Logo">
 			<nav>
-				<a href="staff_dashboard.php" class="active">Appointments</a>
+				<a href="staff_dashboard.php" class="nav-link active" data-section="appointments">Appointments</a>
+				<a href="#" class="nav-link" data-section="feedback">View Feedback</a>
+				<a href="#" class="nav-link" data-section="notifications">Notifications</a>
 			</nav>
 			<button class="logout-btn" id="staffLogoutBtn" style="margin-top:auto;background:#fff;color:var(--primary);border:none;border-radius:24px;padding:10px 20px;cursor:pointer;">Sign Out</button>
 		</aside>
@@ -176,6 +178,22 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 						<h3 style="margin-bottom:12px;">Existing Blocks</h3>
 						<div class="blocked-list" id="blockedList"></div>
 					</div>
+				</div>
+			</section>
+
+			<!-- Feedback Section -->
+			<section class="panel" id="feedbackSection" style="display:none;">
+				<h2>Feedback & Ratings</h2>
+				<div id="feedbackList" class="feedback-list">
+					<div style="text-align:center;padding:40px;color:var(--muted);">Loading feedback...</div>
+				</div>
+			</section>
+
+			<!-- Notifications Section -->
+			<section class="panel" id="notificationsSection" style="display:none;">
+				<h2>Notifications</h2>
+				<div id="notificationsList" class="notifications-list">
+					<div style="text-align:center;padding:40px;color:var(--muted);">Loading notifications...</div>
 				</div>
 			</section>
 
@@ -690,6 +708,156 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 					loadChatMessages();
 				}
 			}, 5000); // Reduced frequency: 5 seconds instead of 3
+		}
+
+		// Navigation handling
+		const navLinks = document.querySelectorAll('.nav-link');
+		const sections = {
+			appointments: document.getElementById('appointmentsSection'),
+			blockSlots: document.getElementById('blockSlotsSection'),
+			feedback: document.getElementById('feedbackSection'),
+			notifications: document.getElementById('notificationsSection')
+		};
+
+		navLinks.forEach(link => {
+			link.addEventListener('click', (e) => {
+				e.preventDefault();
+				const section = link.getAttribute('data-section');
+				
+				// Update active nav
+				navLinks.forEach(l => l.classList.remove('active'));
+				link.classList.add('active');
+				
+				// Show/hide sections
+				Object.values(sections).forEach(s => s.style.display = 'none');
+				if (section === 'appointments') {
+					sections.appointments.style.display = 'block';
+					sections.blockSlots.style.display = 'block';
+				} else if (section === 'feedback') {
+					sections.feedback.style.display = 'block';
+					loadFeedback();
+				} else if (section === 'notifications') {
+					sections.notifications.style.display = 'block';
+					loadNotifications();
+				}
+			});
+		});
+
+		// Load feedback
+		async function loadFeedback() {
+			try {
+				const res = await fetch('get_staff_feedback.php', {
+					credentials: 'same-origin'
+				});
+				const data = await res.json();
+				
+				if (data.success && data.feedback) {
+					if (data.feedback.length === 0) {
+						document.getElementById('feedbackList').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No feedback received yet.</div>';
+						return;
+					}
+					
+					document.getElementById('feedbackList').innerHTML = data.feedback.map(fb => {
+						const date = new Date(fb.feedback_submitted_at || fb.appointment_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+						const stars = '⭐'.repeat(fb.rating || 0) + '☆'.repeat(5 - (fb.rating || 0));
+						return `
+							<article class="staff-card">
+								<header>
+									<div>
+										<h3>${fb.first_name || ''} ${fb.last_name || ''}</h3>
+										<p style="color:var(--muted);font-size:0.9rem;">${fb.email || ''} • ${date}</p>
+									</div>
+									<span class="status-pill" style="background:#fbbf24;color:#78350f;">${fb.rating || 0}/5</span>
+								</header>
+								<div class="details-grid">
+									<div class="detail">
+										<label>Appointment</label>
+										<span>${fb.appointment_date || ''} at ${fb.appointment_time || ''}</span>
+									</div>
+									<div class="detail">
+										<label>Concern</label>
+										<span>${fb.concern || 'No concern'}</span>
+									</div>
+									<div class="detail">
+										<label>Rating</label>
+										<span style="font-size:1.2rem;">${stars}</span>
+									</div>
+								</div>
+								${fb.feedback_comment ? `<div style="margin-top:12px;padding:12px;background:#f9fafb;border-radius:8px;"><p style="margin:0;color:var(--text);">${fb.feedback_comment}</p></div>` : ''}
+							</article>
+						`;
+					}).join('');
+				} else {
+					document.getElementById('feedbackList').innerHTML = `<div style="text-align:center;padding:40px;color:#dc2626;">${data.error || 'Failed to load feedback'}</div>`;
+				}
+			} catch (err) {
+				console.error('Error loading feedback:', err);
+				document.getElementById('feedbackList').innerHTML = '<div style="text-align:center;padding:40px;color:#dc2626;">Error loading feedback. Please try again.</div>';
+			}
+		}
+
+		// Load notifications
+		async function loadNotifications() {
+			try {
+				const res = await fetch('get_staff_notifications.php', {
+					credentials: 'same-origin'
+				});
+				const data = await res.json();
+				
+				if (data.success && data.notifications) {
+					if (data.notifications.length === 0) {
+						document.getElementById('notificationsList').innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">No notifications yet.</div>';
+						return;
+					}
+					
+					document.getElementById('notificationsList').innerHTML = data.notifications.map(notif => {
+						const date = new Date(notif.created_at || notif.appointment_date).toLocaleString('en-US', { 
+							year: 'numeric', 
+							month: 'long', 
+							day: 'numeric',
+							hour: '2-digit',
+							minute: '2-digit'
+						});
+						const statusClass = notif.sms_sent ? 'status-approved' : 'status-declined';
+						const statusText = notif.sms_sent ? 'Sent' : 'Failed';
+						return `
+							<article class="staff-card">
+								<header>
+									<div>
+										<h3>SMS Notification</h3>
+										<p style="color:var(--muted);font-size:0.9rem;">${date}</p>
+									</div>
+									<span class="status-pill ${statusClass}">${statusText}</span>
+								</header>
+								<div class="details-grid">
+									<div class="detail">
+										<label>User</label>
+										<span>${notif.first_name || ''} ${notif.last_name || ''}</span>
+									</div>
+									<div class="detail">
+										<label>Phone</label>
+										<span>${notif.phone || 'N/A'}</span>
+									</div>
+									<div class="detail">
+										<label>Appointment</label>
+										<span>${notif.appointment_date || ''} at ${notif.appointment_time || ''}</span>
+									</div>
+									<div class="detail">
+										<label>Status</label>
+										<span>${notif.status || 'N/A'}</span>
+									</div>
+								</div>
+								${notif.sms_error ? `<div style="margin-top:12px;padding:12px;background:#fee2e2;border-radius:8px;"><p style="margin:0;color:#b91c1c;font-size:0.9rem;">Error: ${notif.sms_error}</p></div>` : ''}
+							</article>
+						`;
+					}).join('');
+				} else {
+					document.getElementById('notificationsList').innerHTML = `<div style="text-align:center;padding:40px;color:#dc2626;">${data.error || 'Failed to load notifications'}</div>`;
+				}
+			} catch (err) {
+				console.error('Error loading notifications:', err);
+				document.getElementById('notificationsList').innerHTML = '<div style="text-align:center;padding:40px;color:#dc2626;">Error loading notifications. Please try again.</div>';
+			}
 		}
 
 		renderAppointments();
