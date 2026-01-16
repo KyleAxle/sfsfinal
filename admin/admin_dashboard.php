@@ -214,7 +214,7 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             border-radius: 12px;
             overflow-x: auto;
             overflow-y: visible;
-            padding-right: 4px;
+            padding: 0 12px 0 0;
         }
         .table thead {
             background: #f9fafb;
@@ -229,11 +229,11 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             padding: 12px 16px;
         }
         .table thead th:last-child {
-            width: 140px !important;
-            min-width: 140px !important;
+            width: 150px !important;
+            min-width: 150px !important;
             white-space: nowrap;
             text-align: center;
-            padding: 12px 12px 12px 8px;
+            padding: 12px 16px 12px 8px;
         }
         .table tbody td {
             padding: 12px 16px;
@@ -295,10 +295,10 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             background: #b91c1c;
         }
         .table tbody td:last-child {
-            width: 140px !important;
-            min-width: 140px !important;
+            width: 150px !important;
+            min-width: 150px !important;
             white-space: nowrap;
-            padding: 12px 12px 12px 8px;
+            padding: 12px 16px 12px 8px;
             text-align: center;
             overflow: visible;
         }
@@ -308,11 +308,10 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             width: 100%;
         }
         .table tbody td:last-child form button {
-            width: calc(100% - 4px);
+            width: 100%;
             min-width: 90px;
             padding: 8px 12px;
             box-sizing: border-box;
-            margin-right: 4px;
         }
         .logout-btn {
             margin-top: auto;
@@ -489,8 +488,10 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
         .btn-manage { background: var(--primary); color: #fff; padding: 10px 20px; border-radius: 24px; text-decoration: none; font-weight: 600; display: inline-block; }
         .panel {
             overflow-x: auto;
+            overflow-y: visible;
             width: 100%;
             min-width: 0;
+            padding-right: 0;
         }
         .admin-table tbody {
             display: table-row-group;
