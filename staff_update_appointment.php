@@ -93,15 +93,16 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 	$formattedTime = $timeObj ? $timeObj->format('g:i A') : $appointmentTime;
 	
 	// Generate SMS message content (without header/footer - will be added by formatSMSMessage)
-	$messageContent = "Hello" . ($userName ? " {$userName}" : "") . "! Your appointment at {$officeName} has been ACCEPTED. ";
-	$messageContent .= "Date: {$formattedDate} at {$formattedTime}. ";
+	// Shortened version to stay under 160 characters and avoid 2-credit charge
+	$messageContent = "Hi" . ($userName ? " {$userName}" : "") . "! Your appt at {$officeName} is ACCEPTED. ";
+	$messageContent .= "{$formattedDate} at {$formattedTime}. ";
 	
-	// Add staff message if provided
+	// Add staff message if provided (shortened)
 	if (!empty($staffMessage)) {
 		$messageContent .= "Note: {$staffMessage} ";
 	}
 	
-	$messageContent .= "Please arrive on time. Thank you!";
+	$messageContent .= "Arrive on time. Thanks!";
 	
 	// Format message with header and footer template
 	$formattedMessage = formatSMSMessage($messageContent);
