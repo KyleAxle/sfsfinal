@@ -212,7 +212,8 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
         }
         .table-responsive {
             border-radius: 12px;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: visible;
         }
         .table thead {
             background: #f9fafb;
@@ -227,10 +228,11 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             padding: 12px 16px;
         }
         .table thead th:last-child {
-            width: auto;
-            min-width: 100px;
+            width: 130px !important;
+            min-width: 130px !important;
             white-space: nowrap;
             text-align: center;
+            padding: 12px 8px;
         }
         .table tbody td {
             padding: 12px 16px;
@@ -292,19 +294,23 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             background: #b91c1c;
         }
         .table tbody td:last-child {
-            width: auto;
-            min-width: 100px;
+            width: 130px !important;
+            min-width: 130px !important;
             white-space: nowrap;
-            padding: 12px 16px;
+            padding: 12px 8px;
             text-align: center;
+            overflow: visible;
         }
         .table tbody td:last-child form {
-            display: inline-block;
+            display: block;
             margin: 0;
             width: 100%;
         }
         .table tbody td:last-child form button {
             width: 100%;
+            min-width: 90px;
+            padding: 8px 12px;
+            box-sizing: border-box;
         }
         .logout-btn {
             margin-top: auto;
@@ -393,7 +399,7 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
         .admin-table table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
+            table-layout: auto;
             min-width: 1120px;
         }
         .admin-table thead th:nth-child(1) { width: 140px; }
