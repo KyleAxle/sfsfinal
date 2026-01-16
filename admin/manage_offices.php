@@ -417,6 +417,11 @@ function formatTimeLabel(string $time): string {
 			display: flex;
 			gap: 8px;
 			align-items: center;
+			flex-wrap: wrap;
+		}
+		.office-actions form {
+			display: flex;
+			margin: 0;
 		}
 		.staff-sidebar img {
 			width: 110px;
@@ -577,7 +582,7 @@ function formatTimeLabel(string $time): string {
 								<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;">
 									<div class="office-actions">
 										<a href="manage_offices.php?edit_office_id=<?= (int)$office['office_id']; ?>" class="btn-edit">Edit Office</a>
-										<form method="POST" onsubmit="return confirm('Are you sure you want to delete this office? This action cannot be undone.');" style="display:inline;">
+										<form method="POST" onsubmit="return confirm('Are you sure you want to delete this office? This action cannot be undone.');">
 											<input type="hidden" name="delete_office_id" value="<?= (int)$office['office_id']; ?>">
 											<button type="submit" class="btn-delete">Delete Office</button>
 										</form>

@@ -226,6 +226,10 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             border-bottom: 2px solid #e5e7eb;
             padding: 12px 16px;
         }
+        .table thead th:last-child {
+            width: 1%;
+            white-space: nowrap;
+        }
         .table tbody td {
             padding: 12px 16px;
             vertical-align: middle;
@@ -276,9 +280,20 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             font-weight: 600;
             font-size: 0.85rem;
             cursor: pointer;
+            white-space: nowrap;
+            min-width: fit-content;
         }
         .btn-remove:hover {
             background: #b91c1c;
+        }
+        .table tbody td:last-child {
+            width: 1%;
+            white-space: nowrap;
+            padding: 12px 16px;
+        }
+        .table tbody td:last-child form {
+            display: inline-block;
+            margin: 0;
         }
         .logout-btn {
             margin-top: auto;
@@ -400,7 +415,17 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
         }
         .admin-table tbody td:last-child {
             text-align: right;
-            white-space: normal;
+            white-space: nowrap;
+            width: 1%;
+            padding: 12px 16px;
+        }
+        .admin-table tbody td:last-child form {
+            display: inline-block;
+            margin: 0;
+        }
+        .admin-table thead th:last-child {
+            width: 1%;
+            white-space: nowrap;
         }
         .admin-table tbody td:nth-child(3),
         .admin-table tbody td:nth-child(4) {
@@ -425,10 +450,21 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
             font-size: 0.85rem;
             cursor: pointer;
             background: #dc2626;
-        color: #fff;
-    }
+            color: #fff;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
         .btn-remove:hover {
             background: #b91c1c;
+        }
+        .admin-table tbody td:last-child {
+            width: 1%;
+            white-space: nowrap;
+            padding: 12px 16px;
+        }
+        .admin-table tbody td:last-child form {
+            display: inline-block;
+            margin: 0;
         }
         .btn-manage { background: var(--primary); color: #fff; padding: 10px 20px; border-radius: 24px; text-decoration: none; font-weight: 600; display: inline-block; }
         .panel {
@@ -612,10 +648,10 @@ $maxDate = $dateRange['max_date'] ?? date('Y-m-d');
                             <?php endif; ?>
                         </td>
                         <td>
-                                            <form method="post" onsubmit="return confirm('Are you sure you want to remove this appointment? This action cannot be undone.');" style="display:inline;">
-                                                <input type="hidden" name="delete_appointment_id" value="<?= $row['appointment_id'] ?>">
-                                                <button type="submit" class="btn-remove">Remove</button>
-                                </form>
+                            <form method="post" onsubmit="return confirm('Are you sure you want to remove this appointment? This action cannot be undone.');">
+                                <input type="hidden" name="delete_appointment_id" value="<?= $row['appointment_id'] ?>">
+                                <button type="submit" class="btn-remove">Remove</button>
+                            </form>
                         </td>
                     </tr>
                                 <?php endforeach; ?>
