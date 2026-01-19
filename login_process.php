@@ -2,6 +2,7 @@
 require_once __DIR__ . '/config/session.php';
 require_once __DIR__ . '/config/security.php';
 require_once __DIR__ . '/config/rate_limit.php';
+require_once __DIR__ . '/config/account_lockout.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Don't show errors to users, but log them
@@ -21,6 +22,14 @@ try {
     if (!$rateLimit['allowed']) {
         error_log("Login rate limit exceeded for: " . $username_email);
         echo "<script>alert('" . addslashes($rateLimit['message']) . "');window.location.href='login.html';</script>";
+        exit();
+    }
+    
+    // Check account lockout BEFORE attempting login
+    $lockoutCheck = checkAccountLockout($pdo, 'users', 'email', $username_email);
+    if ($lockoutCheck['locked']) {
+        error_log("Login blocked: Account locked for: " . $username_email);
+        echo "<script>alert('" . addslashes($lockoutCheck['message']) . "');window.location.href='login.html';</script>";
         exit();
     }
     
@@ -88,15 +97,49 @@ try {
                 exit();
             }
             
+            // Reset failed attempts on successful login
+            resetFailedAttempts($pdo, 'users', 'email', $username_email);
+            
             $_SESSION['user_id'] = $row['user_id'];
             $_SESSION['first_name'] = $row['first_name'];
             $_SESSION['last_name'] = $row['last_name'];
             $_SESSION['email'] = $row['email'];
+            $_SESSION['role'] = 'user';
+            
+            // Log successful login
+            require_once __DIR__ . '/config/audit_log.php';
+            logAuditEvent(AUDIT_LOGIN, 'user', $row['user_id'], [
+                'email' => $username_email,
+                'first_name' => $row['first_name']
+            ], $row['user_id'], 'user');
+            
+            error_log("Successful login: User ID " . $row['user_id'] . " (" . $username_email . ")");
             header("Location: proto2.html");
             exit();
         } else {
-            error_log("Login failed: Incorrect password for email: " . $username_email);
-            echo "<script>alert('Incorrect password.');window.location.href='login.html';</script>";
+            // Record failed attempt
+            $lockoutResult = recordFailedAttempt($pdo, 'users', 'email', $username_email);
+            error_log("Login failed: Incorrect password for email: " . $username_email . " (Attempts: " . $lockoutResult['attempts'] . ")");
+            
+            // Log failed login attempt
+            require_once __DIR__ . '/config/audit_log.php';
+            logAuditEvent(AUDIT_LOGIN_FAILED, 'user', null, [
+                'email' => $username_email,
+                'attempts' => $lockoutResult['attempts'],
+                'locked' => $lockoutResult['locked']
+            ], null, null);
+            
+            if ($lockoutResult['locked']) {
+                // Log account lockout
+                logAuditEvent(AUDIT_ACCOUNT_LOCKED, 'user', null, [
+                    'email' => $username_email,
+                    'reason' => 'too_many_failed_attempts'
+                ], null, null);
+                
+                echo "<script>alert('" . addslashes($lockoutResult['message']) . "');window.location.href='login.html';</script>";
+            } else {
+                echo "<script>alert('" . addslashes($lockoutResult['message']) . "');window.location.href='login.html';</script>";
+            }
             exit();
         }
     } else {

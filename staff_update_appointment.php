@@ -8,12 +8,18 @@ ini_set('log_errors', 1);
 ob_start();
 
 require_once __DIR__ . '/config/session.php';
+require_once __DIR__ . '/config/authorization.php';
+require_once __DIR__ . '/config/audit_log.php';
+
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 	echo json_encode(['success' => false, 'error' => 'Invalid request']);
 	exit;
 }
+
+// Require staff authentication
+requireStaff();
 
 if (!isset($_SESSION['staff_id'], $_SESSION['office_id'])) {
 	http_response_code(401);
@@ -284,6 +290,15 @@ try {
 
 	$pdo->commit();
 	
+	// Log appointment update
+	require_once __DIR__ . '/config/audit_log.php';
+	logAuditEvent(AUDIT_APPOINTMENT_UPDATED, 'appointment', $appointmentId, [
+		'old_status' => $appointmentData['status'] ?? 'unknown',
+		'new_status' => $dbStatus,
+		'office_id' => $officeId,
+		'sms_sent' => false // Will be updated below if SMS is sent
+	], $_SESSION['staff_id'], 'staff');
+	
 	// Send SMS notification if appointment is accepted/approved
 	if ($dbStatus === 'accepted' || $rawStatus === 'approved') {
 		error_log('Attempting to send SMS for appointment ID ' . $appointmentId);
@@ -294,6 +309,14 @@ try {
 			error_log('SMS sending failed for appointment ID ' . $appointmentId . ': ' . $smsError);
 		} else {
 			error_log('SMS sent successfully for appointment ID ' . $appointmentId);
+			// Update audit log with SMS status
+			$pdo->exec("
+				UPDATE public.audit_log 
+				SET details = jsonb_set(details, '{sms_sent}', 'true'::jsonb)
+				WHERE action = 'appointment_updated' 
+				AND entity_id = {$appointmentId}
+				AND created_at > NOW() - INTERVAL '1 minute'
+			");
 		}
 	}
 	

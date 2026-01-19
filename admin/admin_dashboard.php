@@ -1,5 +1,11 @@
 <?php
 require_once __DIR__ . '/../config/session.php';
+require_once __DIR__ . '/../config/authorization.php';
+require_once __DIR__ . '/../config/audit_log.php';
+
+// Require admin authentication
+requireAdmin();
+
 $pdo = require __DIR__ . '/../config/db.php';
 
 // Handle appointment deletion

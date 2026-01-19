@@ -4,17 +4,16 @@ ini_set('display_errors', 1);
 header('Content-Type: text/plain');
 
 require_once __DIR__ . '/config/session.php';
+require_once __DIR__ . '/config/authorization.php';
+require_once __DIR__ . '/config/audit_log.php';
+
+// Require user authentication
+requireUser();
 
 try {
     $pdo = require __DIR__ . '/config/db.php';
 } catch (Exception $e) {
     echo "error: Database connection failed: " . $e->getMessage();
-    exit;
-}
-
-// Validate user session
-if (!isset($_SESSION['user_id'])) {
-    echo "error: Not logged in";
     exit;
 }
 
@@ -204,6 +203,13 @@ try {
         exit;
     }
 
+    // Log appointment creation
+    logAuditEvent(AUDIT_APPOINTMENT_CREATED, 'appointment', $appointment_id, [
+        'office_id' => $office_id,
+        'appointment_date' => $appointment_date,
+        'appointment_time' => $appointment_time
+    ], $user_id, 'user');
+    
     echo "success";
     
 } catch (PDOException $e) {
