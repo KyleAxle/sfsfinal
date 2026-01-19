@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Complete Your Profile • CJC School Frontline Services</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/register.css">
+</head>
+<body>
+	<div class="register-shell">
+		<section class="register-left">
+			<h1>COMPLETE<br>PROFILE</h1>
+			<img src="img/Building.png" alt="Campus Building">
+		</section>
+
+		<section class="register-right">
+			<div class="register-brand">
+				<img src="img/cjclogo.png" alt="CJC Logo">
+				<a class="register-help" href="mailto:support@cjcsfs.edu.ph">Need Help?</a>
+			</div>
+
+			<form class="register-form" method="POST" action="complete_google_profile.php">
+				<div class="full-width">
+					<p style="color: var(--text-muted); margin-bottom: 16px; text-align: center;">
+						Welcome! Please complete your profile to continue.
+					</p>
+				</div>
+
+				<input class="form-control" type="tel" name="phone" placeholder="Phone Number" required>
+
+				<div class="dob-row full-width">
+					<div class="dob-input-wrapper">
+						<label for="dobInput" class="dob-label">Date of Birth</label>
+						<input class="form-control" type="date" name="date_of_birth" id="dobInput" required>
+					</div>
+					<div class="age-box">
+						<label for="age">Age:</label>
+						<input id="age" type="number" name="age" min="1" max="120" inputmode="numeric" readonly>
+					</div>
+				</div>
+
+				<div class="register-actions">
+					<a class="btn btn-back" href="skip_profile_completion.php">Skip for Now</a>
+					<button class="btn btn-submit" type="submit">Complete Profile</button>
+				</div>
+			</form>
+		</section>
+	</div>
+
+	<script>
+		const ageField = document.getElementById('age');
+		const dobInput = document.getElementById('dobInput');
+
+		function calculateAge(dob) {
+			if (!dob) return '';
+			const birth = new Date(dob);
+			if (Number.isNaN(birth.getTime())) return '';
+			const today = new Date();
+			let age = today.getFullYear() - birth.getFullYear();
+			const m = today.getMonth() - birth.getMonth();
+			if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+				age--;
+			}
+			return age >= 0 ? age : '';
+		}
+
+		dobInput?.addEventListener('change', () => {
+			ageField.value = calculateAge(dobInput.value);
+		});
+	</script>
+</body>
+</html>

@@ -56,8 +56,8 @@ if (isset($_GET['code'])) {
         $stmt->execute([$first_name, $last_name, $email, $hashed_password]);
     }
 
-    // Log in the user (fetch their info)
-    $stmt = $pdo->prepare("SELECT user_id, first_name, last_name FROM public.users WHERE email = ?");
+    // Log in the user (fetch their info including profile completion status)
+    $stmt = $pdo->prepare("SELECT user_id, first_name, last_name, phone, date_of_birth, age FROM public.users WHERE email = ?");
     $stmt->execute([$email]);
     if ($row = $stmt->fetch()) {
         $_SESSION['user_id'] = $row['user_id'];
@@ -65,6 +65,16 @@ if (isset($_GET['code'])) {
         $_SESSION['last_name'] = $row['last_name'];
         $_SESSION['email'] = $email;
         $_SESSION['user_name'] = $name;
+        
+        // Check if profile needs completion (phone or date_of_birth is missing)
+        $needsProfileCompletion = empty($row['phone']) || empty($row['date_of_birth']);
+        
+        if ($needsProfileCompletion) {
+            $_SESSION['needs_profile_completion'] = true;
+            header('Location: complete_profile.html');
+            exit();
+        }
+        
         header('Location: proto2.html');
         exit();
     } else {
