@@ -24,13 +24,16 @@
 				<input class="form-control" type="text" name="last_name" placeholder="Last Name" required>
 
 				<input class="form-control" type="email" name="email" placeholder="Email" autocomplete="username" required>
-				<input class="form-control" type="tel" name="phone" placeholder="Phone Number (optional)">
+				<input class="form-control" type="tel" name="phone" placeholder="Phone Number">
 
 				<input class="form-control" type="password" name="password" placeholder="Password" autocomplete="new-password" required>
 				<input class="form-control" type="password" name="confirm_password" placeholder="Confirm Password" autocomplete="new-password" required>
 
 				<div class="dob-row full-width">
-					<input class="form-control" type="date" name="dob" aria-label="Date of Birth" id="dobInput">
+					<div class="dob-input-wrapper">
+						<label for="dobInput" class="dob-label">Date of Birth</label>
+						<input class="form-control" type="date" name="dob" id="dobInput">
+					</div>
 					<div class="age-box">
 						<label for="age">Age:</label>
 						<input id="age" type="number" name="age" min="1" max="120" inputmode="numeric" readonly>
