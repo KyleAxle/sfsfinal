@@ -129,6 +129,7 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 	$formattedMessage = formatSMSMessage($messageContent);
 	
 	// Use the centralized SMS API configuration
+	// Try form-urlencoded format first (as per iprogsms.com API requirements)
 	$data = [
 		'api_token' => SMS_API_TOKEN,
 		'message' => $formattedMessage,
@@ -136,28 +137,35 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 	];
 	
 	error_log('SMS API Request - URL: ' . SMS_API_URL);
-	error_log('SMS API Request - Data: ' . json_encode($data));
+	error_log('SMS API Request - Data: ' . print_r($data, true));
+	error_log('SMS API Request - Phone Number: ' . $phoneNumber);
+	error_log('SMS API Request - Token: ' . substr(SMS_API_TOKEN, 0, 10) . '...');
 	
 	$ch = curl_init(SMS_API_URL);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_POST, true);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); // Send as JSON
+	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data)); // Use form-urlencoded format
 	curl_setopt($ch, CURLOPT_HTTPHEADER, [
-		'Content-Type: application/json' // Changed to JSON
+		'Content-Type: application/x-www-form-urlencoded'
 	]);
 	curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 	
 	$response = curl_exec($ch);
 	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	$curlError = curl_error($ch);
+	$curlErrno = curl_errno($ch);
 	curl_close($ch);
 	
 	error_log('SMS API Response - HTTP Code: ' . $httpCode);
+	error_log('SMS API Response - cURL Error: ' . ($curlError ?: 'None'));
+	error_log('SMS API Response - cURL Errno: ' . ($curlErrno ?: 'None'));
 	error_log('SMS API Response - Body: ' . $response);
 	
 	if ($curlError) {
-		error_log('SMS sending error for appointment ID ' . $appointmentData['appointment_id'] . ': ' . $curlError);
+		error_log('SMS sending error for appointment ID ' . $appointmentData['appointment_id'] . ': cURL Error #' . $curlErrno . ' - ' . $curlError);
 		return false;
 	}
 	
@@ -172,6 +180,7 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 	
 	if (json_last_error() !== JSON_ERROR_NONE || !is_array($result)) {
 		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': Invalid JSON response - ' . substr($response, 0, 200));
+		error_log('JSON Error: ' . json_last_error_msg());
 		return false;
 	}
 	
@@ -181,7 +190,8 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 		return true;
 	} else {
 		$errorMsg = $result['message'] ?? $result['error'] ?? 'API returned error';
-		$errorDetails = 'HTTP Code: ' . $httpCode . ', Response: ' . substr($response, 0, 500);
+		$errorStatus = $result['status'] ?? 'unknown';
+		$errorDetails = 'HTTP Code: ' . $httpCode . ', API Status: ' . $errorStatus . ', Response: ' . substr($response, 0, 500);
 		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': ' . $errorMsg . ' | ' . $errorDetails);
 		return false;
 	}
