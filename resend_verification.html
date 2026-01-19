@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Resend Verification Email • CJC School Frontline Services</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/register.css">
+</head>
+<body>
+	<div class="register-shell">
+		<section class="register-left">
+			<h1>RESEND<br>VERIFICATION</h1>
+			<img src="img/Building.png" alt="Campus Building">
+		</section>
+
+		<section class="register-right">
+			<div class="register-brand">
+				<img src="img/cjclogo.png" alt="CJC Logo">
+				<a class="register-help" href="mailto:support@cjcsfs.edu.ph">Need Help?</a>
+			</div>
+
+			<form class="register-form" method="POST" action="resend_verification.php">
+				<div class="full-width">
+					<p style="color: var(--text-muted); margin-bottom: 16px; text-align: center;">
+						Enter your email address to receive a new verification email.
+					</p>
+				</div>
+
+				<input class="form-control" type="email" name="email" placeholder="Email Address" autocomplete="username" required>
+
+				<div class="register-actions">
+					<a class="btn btn-back" href="login.html">Back to Login</a>
+					<button class="btn btn-submit" type="submit">Resend Verification Email</button>
+				</div>
+			</form>
+		</section>
+	</div>
+</body>
+</html>

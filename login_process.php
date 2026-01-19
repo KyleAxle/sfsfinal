@@ -42,7 +42,8 @@ try {
     // Use case-insensitive email matching (LOWER() for both sides)
     // Try with public schema first, fallback to users without schema prefix
     // Update: Use Users table and check by email only (since username is not in the table)
-    $stmt = $pdo->prepare("SELECT * FROM public.users WHERE LOWER(email) = LOWER(?)");
+    // Also fetch email_verified status
+    $stmt = $pdo->prepare("SELECT user_id, first_name, last_name, email, password_hash, COALESCE(email_verified, true) as email_verified FROM public.users WHERE LOWER(email) = LOWER(?)");
     $stmt->execute([$username_email]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -60,7 +61,7 @@ try {
     
     // If not found with public.users, try without schema prefix (in case search_path is set)
     if (!$row) {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE LOWER(email) = LOWER(?)");
+        $stmt = $pdo->prepare("SELECT user_id, first_name, last_name, email, password_hash, COALESCE(email_verified, true) as email_verified FROM users WHERE LOWER(email) = LOWER(?)");
         $stmt->execute([$username_email]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
@@ -78,6 +79,15 @@ try {
         
         // Schema uses password_hash column (not password)
         if (password_verify($password, $row['password_hash'])) {
+            // Check if email is verified
+            $emailVerified = $row['email_verified'] ?? true; // Default to true if column doesn't exist (backward compatibility)
+            
+            if (!$emailVerified) {
+                error_log("Login blocked: Email not verified for: " . $username_email);
+                echo "<script>alert('Please verify your email address before logging in. Check your inbox for the verification email.');window.location.href='login.html';</script>";
+                exit();
+            }
+            
             $_SESSION['user_id'] = $row['user_id'];
             $_SESSION['first_name'] = $row['first_name'];
             $_SESSION['last_name'] = $row['last_name'];

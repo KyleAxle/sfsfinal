@@ -8,6 +8,7 @@ header('Content-Type: text/html; charset=UTF-8');
 require_once __DIR__ . '/config/session.php';
 require_once __DIR__ . '/config/security.php';
 require_once __DIR__ . '/config/rate_limit.php';
+require_once __DIR__ . '/config/email.php';
 
 // Set security headers
 setSecurityHeaders();
@@ -231,6 +232,9 @@ try {
     }
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    
+    // Generate email verification token
+    $verificationToken = generateVerificationToken();
 
     // Insert new user into Supabase (explicitly use public.users schema)
     // Schema uses password_hash column (not password) and includes phone column
@@ -245,6 +249,22 @@ try {
     // Build INSERT query dynamically based on available columns
     $insertFields = ['first_name', 'last_name', 'email', 'password_hash'];
     $insertValues = [$first_name, $last_name, $email, $hashed_password];
+    
+    // Add email verification fields if columns exist
+    if (in_array('email_verified', $columns)) {
+        $insertFields[] = 'email_verified';
+        $insertValues[] = false; // Not verified yet
+    }
+    
+    if (in_array('email_verification_token', $columns)) {
+        $insertFields[] = 'email_verification_token';
+        $insertValues[] = $verificationToken;
+    }
+    
+    if (in_array('email_verification_sent_at', $columns)) {
+        $insertFields[] = 'email_verification_sent_at';
+        $insertValues[] = date('Y-m-d H:i:s');
+    }
     
     if (in_array('phone', $columns)) {
         $insertFields[] = 'phone';
@@ -281,27 +301,41 @@ try {
         error_log("Registration verification: " . ($insertedUser ? "User found with ID: " . $insertedUser['user_id'] : "User NOT found"));
         
         if ($insertedUser) {
-        echo '<!DOCTYPE html>
+            // Send verification email
+            $emailSent = sendVerificationEmail($email, $verificationToken, $first_name);
+            
+            if (!$emailSent) {
+                error_log("Failed to send verification email to: $email");
+            }
+            
+            echo '<!DOCTYPE html>
         <html>
         <head>
             <title>Registration Successful</title>
-            <meta http-equiv="refresh" content="3;url=login.html">
+            <meta charset="UTF-8">
             <style>
                 body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-                .success-box { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                .success-box { background: white; padding: 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
                 .success { color: #2e7d32; }
-                .btn { display: inline-block; padding: 10px 20px; background: #212529; color: white; text-decoration: none; border-radius: 4px; margin-top: 15px; }
-                .btn:hover { background: #343a40; }
+                .info { background: #e3f2fd; padding: 15px; border-left: 4px solid #2196F3; margin: 20px 0; border-radius: 4px; }
+                .btn { display: inline-block; padding: 12px 24px; background: #0047b3; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px; }
+                .btn:hover { background: #003d99; }
             </style>
         </head>
         <body>
             <div class="success-box">
                 <h2 class="success">✓ Registration Successful!</h2>
-                <p>Your account has been created successfully. You can now log in.</p>
-                <p>Redirecting to login page...</p>
+                <p>Your account has been created successfully.</p>
+                <div class="info">
+                    <h3 style="margin-top: 0;">📧 Verify Your Email</h3>
+                    <p>We\'ve sent a verification email to <strong>' . htmlspecialchars($email) . '</strong></p>
+                    <p>Please check your inbox and click the verification link to activate your account.</p>
+                    <p><strong>Note:</strong> You must verify your email before you can log in.</p>
+                    <p style="margin-bottom: 0;">Didn\'t receive the email? <a href="resend_verification.html">Resend verification email</a></p>
+                </div>
                 <a href="login.html" class="btn">Go to Login</a>
             </div>
-            <script>setTimeout(function(){window.location.href="login.html";}, 2000);</script>
+            <script>setTimeout(function(){window.location.href="login.html";}, 10000);</script>
         </body>
         </html>';
         } else {
