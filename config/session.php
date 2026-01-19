@@ -13,14 +13,14 @@ if (session_status() === PHP_SESSION_NONE) {
 	// Session data lifetime on server: 30 days
 	ini_set('session.gc_maxlifetime', $cookieLifetime);
 	
-	// Cookie parameters
+	// Cookie parameters - Enhanced security
 	$cookieParams = [
 		'lifetime' => $cookieLifetime, // Cookie expires in 30 days
 		'path' => '/', // Available across entire site
-		'domain' => '', // Use current domain
+		'domain' => '', // Use current domain (empty = current domain only)
 		'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on', // HTTPS only if available
-		'httponly' => true, // Prevent JavaScript access (security)
-		'samesite' => 'Lax' // CSRF protection
+		'httponly' => true, // Prevent JavaScript access (XSS protection)
+		'samesite' => 'Lax' // CSRF protection (Lax = allows GET requests from other sites, blocks POST)
 	];
 	
 	session_set_cookie_params(

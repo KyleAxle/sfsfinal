@@ -6,6 +6,11 @@ ini_set('display_errors', 1);
 header('Content-Type: text/html; charset=UTF-8');
 
 require_once __DIR__ . '/config/session.php';
+require_once __DIR__ . '/config/security.php';
+require_once __DIR__ . '/config/rate_limit.php';
+
+// Set security headers
+setSecurityHeaders();
 
 // Check if this is a POST request
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -62,16 +67,92 @@ try {
     </html>');
 }
 
-$first_name = trim($_POST['first_name'] ?? '');
-$last_name = trim($_POST['last_name'] ?? '');
-$email = trim($_POST['email'] ?? '');
-$phone = trim($_POST['phone'] ?? '');
+// Rate limiting check
+$clientIP = getClientIP();
+$rateLimit = checkRegisterRateLimit($clientIP);
+if (!$rateLimit['allowed']) {
+    error_log("Registration rate limit exceeded for IP: " . $clientIP);
+    die('<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Rate Limit Exceeded</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+            .error-box { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .error { color: #d32f2f; }
+        </style>
+    </head>
+    <body>
+        <div class="error-box">
+            <h2 class="error">Too Many Registration Attempts</h2>
+            <p>' . htmlspecialchars($rateLimit['message']) . '</p>
+            <p><a href="register.html">← Back to Registration</a></p>
+        </div>
+    </body>
+    </html>');
+}
+
+// Sanitize and validate input
+$first_name = sanitizeInput($_POST['first_name'] ?? '');
+$last_name = sanitizeInput($_POST['last_name'] ?? '');
+$email = sanitizeInput($_POST['email'] ?? '', 'email');
+$phone = sanitizeInput($_POST['phone'] ?? '');
 $password = $_POST['password'] ?? '';
 $confirm_password = $_POST['confirm_password'] ?? '';
-$date_of_birth = trim($_POST['dob'] ?? ''); // Registration form uses 'dob' field name
+$date_of_birth = sanitizeInput($_POST['dob'] ?? ''); // Registration form uses 'dob' field name
 $age = isset($_POST['age']) && $_POST['age'] !== '' ? (int)$_POST['age'] : null;
 
-// Validation
+// Input validation rules
+$validationRules = [
+    'first_name' => ['required' => true, 'min_length' => 1, 'max_length' => 100],
+    'last_name' => ['required' => true, 'min_length' => 1, 'max_length' => 100],
+    'email' => ['required' => true, 'type' => 'email', 'max_length' => 100],
+    'password' => ['required' => true, 'min_length' => 8],
+];
+
+$validationErrors = validateInput($_POST, $validationRules);
+
+// Password strength validation
+if (!empty($password)) {
+    $passwordErrors = validatePasswordStrength($password);
+    if (!empty($passwordErrors)) {
+        $validationErrors['password'] = implode(' ', $passwordErrors);
+    }
+}
+
+// Password confirmation check
+if ($password !== $confirm_password) {
+    $validationErrors['confirm_password'] = 'Passwords do not match';
+}
+
+// Display validation errors
+if (!empty($validationErrors)) {
+    $errorMessages = implode('<br>', array_values($validationErrors));
+    echo '<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Validation Error</title>
+        <meta http-equiv="refresh" content="5;url=register.html">
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+            .error-box { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .error { color: #d32f2f; }
+        </style>
+    </head>
+    <body>
+        <div class="error-box">
+            <h2 class="error">Validation Error</h2>
+            <p>' . htmlspecialchars($errorMessages) . '</p>
+            <p>Redirecting back to registration form...</p>
+            <p><a href="register.html">Click here if not redirected</a></p>
+        </div>
+        <script>setTimeout(function(){window.location.href="register.html";}, 5000);</script>
+    </body>
+    </html>';
+    exit();
+}
+
+// Basic required field check (backup)
 if (empty($first_name) || empty($last_name) || empty($email) || empty($password)) {
     echo '<!DOCTYPE html>
     <html>

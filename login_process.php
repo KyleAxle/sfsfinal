@@ -1,21 +1,41 @@
 <?php
 require_once __DIR__ . '/config/session.php';
+require_once __DIR__ . '/config/security.php';
+require_once __DIR__ . '/config/rate_limit.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Don't show errors to users, but log them
 
+// Set security headers
+setSecurityHeaders();
+
 try {
     $pdo = require __DIR__ . '/config/db.php';
     
-    $username_email = trim($_POST['username_email'] ?? '');
+    // Sanitize input
+    $username_email = sanitizeInput($_POST['username_email'] ?? '', 'email');
     $password = $_POST['password'] ?? '';
+    
+    // Rate limiting check
+    $rateLimit = checkLoginRateLimit($username_email);
+    if (!$rateLimit['allowed']) {
+        error_log("Login rate limit exceeded for: " . $username_email);
+        echo "<script>alert('" . addslashes($rateLimit['message']) . "');window.location.href='login.html';</script>";
+        exit();
+    }
     
     // Debug: Log what we received
     error_log("Login attempt - Email received: '" . $username_email . "' (length: " . strlen($username_email) . ")");
-    error_log("Login attempt - POST data: " . print_r($_POST, true));
     
     if (empty($username_email) || empty($password)) {
         echo "<script>alert('Please enter both email and password.');window.location.href='login.html';</script>";
+        exit();
+    }
+    
+    // Validate email format
+    if (!filter_var($username_email, FILTER_VALIDATE_EMAIL)) {
+        error_log("Login attempt with invalid email format: " . $username_email);
+        echo "<script>alert('Invalid email format.');window.location.href='login.html';</script>";
         exit();
     }
     
