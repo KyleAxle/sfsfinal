@@ -185,14 +185,24 @@ function sendAppointmentAcceptanceSMS($appointmentData, $staffMessage = '', $pdo
 	}
 	
 	// Check for success - API returns status: 200 on success
+	// NOTE: Status 200 means API ACCEPTED the message, but doesn't guarantee delivery
 	if (isset($result['status']) && $result['status'] == 200) {
-		error_log('SMS notification sent successfully to ' . $phoneNumber . ' for appointment ID ' . $appointmentData['appointment_id'] . ' - Message ID: ' . ($result['message_id'] ?? 'N/A'));
+		$messageId = $result['message_id'] ?? 'N/A';
+		$apiMessage = $result['message'] ?? 'No message';
+		error_log('SMS API ACCEPTED message to ' . $phoneNumber . ' for appointment ID ' . $appointmentData['appointment_id'] . ' - Message ID: ' . $messageId);
+		error_log('SMS API Response Message: ' . $apiMessage);
+		error_log('⚠️ NOTE: Status 200 means API accepted the message, but actual delivery depends on carrier/network. Check iprogsms.com dashboard for delivery status.');
+		
+		// Log full response for debugging
+		error_log('SMS Full API Response: ' . json_encode($result));
+		
 		return true;
 	} else {
 		$errorMsg = $result['message'] ?? $result['error'] ?? 'API returned error';
 		$errorStatus = $result['status'] ?? 'unknown';
 		$errorDetails = 'HTTP Code: ' . $httpCode . ', API Status: ' . $errorStatus . ', Response: ' . substr($response, 0, 500);
 		error_log('SMS sending failed for appointment ID ' . $appointmentData['appointment_id'] . ': ' . $errorMsg . ' | ' . $errorDetails);
+		error_log('SMS Full API Response: ' . $response);
 		return false;
 	}
 }

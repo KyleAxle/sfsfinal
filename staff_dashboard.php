@@ -432,7 +432,8 @@ $jsonTimes = json_encode($timeOptions, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_Q
 					// Check explicitly for true (not just truthy)
 					if (data.sms_sent === true) {
 						console.log('✅ SMS notification sent successfully!');
-						alert('Appointment accepted! SMS notification has been sent to the user.');
+						// Note: Status 200 means API accepted the message, but actual delivery depends on carrier/network
+						alert('Appointment accepted! SMS notification has been queued for delivery.\n\nNote: The message was accepted by the SMS service, but delivery depends on the carrier network. If the user doesn\'t receive it, check the iprogsms.com dashboard for delivery status.');
 					} else {
 						// SMS was not sent (no phone number, API error, or sms_sent is false/undefined)
 						console.warn('⚠️ SMS was not sent:', data.sms_error || 'Unknown reason');
